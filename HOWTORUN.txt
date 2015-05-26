@@ -1,0 +1,1 @@
+cp ../bin/reconstruction_GPU2 ../../bin/linux64/
