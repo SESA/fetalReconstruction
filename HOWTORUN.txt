@@ -1,1 +1,5 @@
+#afer running make
 cp ../bin/reconstruction_GPU2 ../../bin/linux64/
+cd ../../bin/linux64
+chmod 777 *
+./runTestDataset.sh
