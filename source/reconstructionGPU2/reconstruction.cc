@@ -125,6 +125,9 @@ int main(int argc, char **argv)
   bool intensity_matching = true;
   unsigned int rec_iterations_first = 4;
   unsigned int rec_iterations_last = 13;
+  
+  //number of threads
+  int numThreads;
 
   bool useCPU = false;
   bool useCPUReg = true;
@@ -195,7 +198,9 @@ int main(int argc, char **argv)
       ("useGPUReg", po::bool_switch(&useGPUReg)->default_value(false), "use faster but less accurate and flexible GPU registration; performs superresolution and robust statistics on GPU.")
       ("useAutoTemplate", po::bool_switch(&useAutoTemplate)->default_value(false), "select 3D registration template stack automatically with matrix rank method.")
       ("useSINCPSF", po::bool_switch(&useSINCPSF)->default_value(false), "use a more MRI like SINC point spread function (PSF) Will be in plane sinc (Bartlett) and through plane Gaussian.")
-      ("disableBiasCorrection", po::bool_switch(&disableBiasCorr)->default_value(false), "disable bias field correction for cases with little or no bias field inhomogenities (makes it faster but less reliable for stron intensity bias)");
+      ("disableBiasCorrection", po::bool_switch(&disableBiasCorr)->default_value(false), "disable bias field correction for cases with little or no bias field inhomogenities (makes it faster but less reliable for stron intensity bias)")
+      ("numThreads", po::value<int>(&numThreads)->default_value(-1), "Number of CPU threads to run for TBB");
+       
     po::variables_map vm;
 
     try
@@ -225,12 +230,24 @@ int main(int argc, char **argv)
     return EXIT_FAILURE;
   }
 
-
+  
   if (useCPU)
   {
     //security measure for wrong input params
     useCPUReg = true;
     useGPUReg = false;
+
+    //set CPU  threads
+    if(numThreads > 0)
+    {
+	cout << "PREV tbb_no_threads = " << tbb_no_threads << endl;
+	tbb_no_threads = numThreads;
+	cout << "NEW tbb_no_threads = " << tbb_no_threads << endl;
+    }
+    else
+    {
+	cout << "Using task_scheduler_init::automatic number of threads" << endl;
+    }
   }
   else
   {
