@@ -53,6 +53,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GPUWORKER_CUDA_CUH
 #define GPUWORKER_CUDA_CUH
 
+/*
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
@@ -73,7 +74,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thrust/transform_reduce.h>
 #include <thrust/tuple.h>
 #include <thrust/count.h>
-#include "recon_volumeHelper.cuh"
+*/
+#include "recon_volumeHelper.h"
 
 #if !USE_BOOST
 //use c++11 in std in case of VS 2012
@@ -145,7 +147,7 @@ public:
 };
 
 
-class GPUWorkerCommunicator
+/*class GPUWorkerCommunicator
 {
 public:
   GPUWorkerSync& workerSync;
@@ -401,6 +403,6 @@ public:
 
   // TODO InitializeRobustStatistics - this function has to return values...
 };
-
+*/
 
 #endif //GPUWORKER_CUDA_CUH

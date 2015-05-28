@@ -251,7 +251,7 @@ int main(int argc, char **argv)
   }
   else
   {
-    cudaDeviceReset();
+      //cudaDeviceReset();
   }
  
   if (useGPUReg) useCPUReg = false;
@@ -303,11 +303,11 @@ int main(int argc, char **argv)
   }
 
 
-  if (!useCPU)
+/*  if (!useCPU)
   {
     //default use all devices > CP 3.0 that are available
     int nDevices;
-    cudaGetDeviceCount(&nDevices);
+    //cudaGetDeviceCount(&nDevices);
     if (nDevices < devicesToUse.size())
     {
       std::cerr << "FATAL ERROR: you cannot use more GPUs than you have in your rig. defaulting to max CP > 3.0 devices. " << std::endl;
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
   }
-
+*/
   //Create reconstruction object
   // !useCPUReg = no multithreaded GPU, only multi-GPU
   irtkReconstruction reconstruction(devicesToUse, useCPUReg, useCPU); // to emulate error for multi-threaded GPU

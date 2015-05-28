@@ -56,7 +56,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <irtkTransformation.h>
 #include <irtkGaussianBlurring.h>
 
-#include "reconstruction_cuda2.cuh"
+#include "reconstruction_cuda2.h"
 
 
 #include <vector>
@@ -97,7 +97,7 @@ protected:
   vector<irtkRealImage> _slices_resampled;
 
   vector<double> _slices_regCertainty;
-  std::vector<Matrix4> _transf;
+  //std::vector<Matrix4> _transf;
 
   /// Transformations
   vector<irtkRigidTransformation> _transformations;
@@ -474,8 +474,8 @@ public:
   irtkRealImage externalRegistrationTargetImage;
 
   void SyncGPU();
-  Matrix4 toMatrix4(irtkMatrix mat);
-  irtkMatrix fromMatrix4(Matrix4 mat);
+  //Matrix4 toMatrix4(irtkMatrix mat);
+  //irtkMatrix fromMatrix4(Matrix4 mat);
   std::vector<irtkMatrix> UpdateGPUTranformationMatrices();
   void generatePSFVolume();
   void GaussianReconstructionGPU();
@@ -488,7 +488,7 @@ public:
   void MStepGPU(int iter);
   void MaskVolumeGPU();
   void SyncCPU();
-  void updateStackSizes(std::vector<uint3> stack_sizes_);
+  //void updateStackSizes(std::vector<uint3> stack_sizes_);
   void ScaleVolumeGPU();
   void RestoreSliceIntensitiesGPU();
   void InitializeEMGPU();

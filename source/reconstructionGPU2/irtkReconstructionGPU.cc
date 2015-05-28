@@ -66,9 +66,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
-#if HAVE_CULA
-#include <cula.h>
-#endif
+//#if HAVE_CULA
+//#include <cula.h>
+//#endif
 
 /* Auxiliary functions (not reconstruction specific) */
 
@@ -233,10 +233,10 @@ irtkReconstruction::irtkReconstruction(std::vector<int> dev, bool useCPUReg, boo
   }
   else
   {*/
-  if(!useCPU)
+  /*if(!useCPU)
   {
     reconstructionGPU = new Reconstruction(dev, true); //to produce the error for CPUReg and multithreaded GPUs
-  }
+    }*/
   //}
 
 }
@@ -258,12 +258,15 @@ void irtkReconstruction::Set_debugGPU(bool val)
 //GPU helpers
 void irtkReconstruction::updateStackSizes(std::vector<uint3> stack_sizes_)
 {
-   if(!_useCPU)
+    /*
+    if(!_useCPU)
     reconstructionGPU->updateStackSizes(stack_sizes_);
+    */
 }
 
 void irtkReconstruction::SyncGPU()
 {
+    /*
   irtkGenericImage<float> mask_float_ = _mask; //check this
   std::cout << "SyncGPU()" << std::endl;
   reconstructionGPU->InitReconstructionVolume(make_uint3(_reconstructed.GetX(), _reconstructed.GetY(), _reconstructed.GetZ()),
@@ -341,16 +344,16 @@ void irtkReconstruction::SyncGPU()
     reconstructionGPU->getSlicesVol_debug(debugSlices.GetPointerToVoxels());
     debugSlices.Write("debugSlices.nii");
     cudaDeviceSynchronize();
-}
+    }*/
 }
 
-Matrix4 irtkReconstruction::toMatrix4(irtkMatrix mat)
+/*Matrix4 irtkReconstruction::toMatrix4(irtkMatrix mat)
 {
   Matrix4 mmat;
-  /*mmat.data[0] = make_double4(mat(0,0), mat(0,1), mat(0,2), mat(0,3));
+  mmat.data[0] = make_double4(mat(0,0), mat(0,1), mat(0,2), mat(0,3));
   mmat.data[1] = make_double4(mat(1,0), mat(1,1), mat(1,2), mat(1,3));
   mmat.data[2] = make_double4(mat(2,0), mat(2,1), mat(2,2), mat(2,3));
-  mmat.data[3] = make_double4(mat(3,0), mat(3,1), mat(3,2), mat(3,3));*/
+  mmat.data[3] = make_double4(mat(3,0), mat(3,1), mat(3,2), mat(3,3));
   mmat.data[0] = make_float4(mat(0, 0), mat(0, 1), mat(0, 2), mat(0, 3));
   mmat.data[1] = make_float4(mat(1, 0), mat(1, 1), mat(1, 2), mat(1, 3));
   mmat.data[2] = make_float4(mat(2, 0), mat(2, 1), mat(2, 2), mat(2, 3));
@@ -384,12 +387,12 @@ irtkMatrix irtkReconstruction::fromMatrix4(Matrix4 mat)
   mmat.Put(3, 3, mat.data[3].w);
 
   return mmat;
-}
+  }*/
 
 std::vector<irtkMatrix> irtkReconstruction::UpdateGPUTranformationMatrices()
 {
 
-  std::vector<Matrix4> sI2W;
+    /*std::vector<Matrix4> sI2W;
   std::vector<Matrix4> sW2I;
   std::vector<Matrix4> sI2Winit;
   std::vector<Matrix4> sW2Iinit;
@@ -414,7 +417,7 @@ std::vector<irtkMatrix> irtkReconstruction::UpdateGPUTranformationMatrices()
   reconstructionGPU->SetSliceMatrices(sliceTransforms_, invsliceTransforms_, sI2W, sW2I, sI2Winit, sW2Iinit,
     toMatrix4(_reconstructed.GetImageToWorldMatrix()), toMatrix4(_reconstructed.GetWorldToImageMatrix()));
 
-  return transformations_;
+    return transformations_;*/
 }
 
 //GPU helpers end
@@ -1579,11 +1582,11 @@ void irtkReconstruction::generatePSFVolume()
   }
 
   //PSF = PSFn;
-  reconstructionGPU->generatePSFVolume(PSF.GetPointerToVoxels(),
+  /*reconstructionGPU->generatePSFVolume(PSF.GetPointerToVoxels(),
     make_uint3(PSF.GetX(), PSF.GetY(), PSF.GetZ()),
     make_float3(_slices[0].GetXSize(), _slices[0].GetYSize(), _slices[0].GetZSize()),
     make_float3(PSF.GetXSize(), PSF.GetYSize(), PSF.GetZSize()), toMatrix4(PSF.GetImageToWorldMatrix()),
-    toMatrix4(PSF.GetWorldToImageMatrix()), _quality_factor, _use_SINC);
+    toMatrix4(PSF.GetWorldToImageMatrix()), _quality_factor, _use_SINC);*/
 }
 
 void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &stacks,
@@ -1591,6 +1594,7 @@ void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &s
   vector<double> &thickness,
   const vector<irtkRealImage> &probability_maps)
 {
+    /*
   if (_debug)
     cout << "CreateSlicesAndTransformations" << endl;
 
@@ -1623,6 +1627,7 @@ void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &s
     reconstructionGPU->updateStackSizes(stack_sizes_);
 
   cout << "Number of slices: " << _slices.size() << endl;
+    */
 }
 
 void irtkReconstruction::ResetSlices(vector<irtkRealImage>& stacks,
@@ -1838,12 +1843,12 @@ public:
 
 void irtkReconstruction::testCPURegGPU()
 {
-  if (_debugGPU)
+    /*if (_debugGPU)
   {
-    std::vector<Matrix4> transf;
+      //std::vector<Matrix4> transf;
     for (int i = 0; i < _transformations_gpu.size(); i++)
     {
-      transf.push_back(toMatrix4(_transformations_gpu[i].GetMatrix()));
+	//transf.push_back(toMatrix4(_transformations_gpu[i].GetMatrix()));
     }
 
     reconstructionGPU->testCPUReg(transf);
@@ -1852,14 +1857,14 @@ void irtkReconstruction::testCPURegGPU()
     irtkGenericImage<float> regTest(reconstructionGPU->regSlices.size.x, reconstructionGPU->regSlices.size.y, reconstructionGPU->regSlices.size.z);
     reconstructionGPU->debugRegSlicesVolume(regTest.GetPointerToVoxels());
     regTest.Write("regTestCPU.nii");
-  }
+    }*/
 
 }
 
 
 void irtkReconstruction::PrepareRegistrationSlices()
 {
-  irtkImageAttributes attr = _reconstructed.GetImageAttributes();
+/*irtkImageAttributes attr = _reconstructed.GetImageAttributes();
   irtkResamplingWithPadding<irtkRealPixel> resampling(attr._dx, attr._dx, attr._dx, -1);
 
   vector<Matrix4> slices_resampledI2W;
@@ -1930,7 +1935,7 @@ void irtkReconstruction::PrepareRegistrationSlices()
     debugSlices.Write("debugRegistrationSlices.nii");
     cudaDeviceSynchronize();
   }
-
+*/
 }
 class ParallelSliceToVolumeRegistrationGPU {
 public:
@@ -1972,6 +1977,7 @@ public:
 
 void irtkReconstruction::SliceToVolumeRegistrationGPU()
 {
+/*
   if (_debug)
     cout << "SliceToVolumeRegistration" << endl;
 
@@ -2039,7 +2045,7 @@ void irtkReconstruction::SliceToVolumeRegistrationGPU()
     reconstructionGPU->debugRegSlicesVolume(regTest.GetPointerToVoxels());
     regTest.Write("regTestGPU.nii");
 }
-
+*/
 }
 
 
@@ -2449,7 +2455,7 @@ irtkRealImage irtkReconstruction::GetReconstructedGPU()
 
 void irtkReconstruction::GaussianReconstructionGPU()
 {
-
+/*
   cout << "Gaussian reconstruction ... ";
   vector<int> voxel_num_gpu;
   reconstructionGPU->GaussianReconstruction(voxel_num_gpu);
@@ -2513,7 +2519,7 @@ void irtkReconstruction::GaussianReconstructionGPU()
   //printf("second test\n");
   //reconstructionGPU->registerSlicesToVolume();
 #endif
-
+*/
 }
 
 

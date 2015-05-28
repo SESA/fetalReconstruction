@@ -39,7 +39,8 @@ public:
     double x, y, z, time;
 
     time = _imagetransformation->_output->ImageToTime(_toutput);
-
+    
+    //actually parallel for loop - TODO blocking?
     for (k = r.begin(); k != r.end(); k++) {
 
       for (j = 0; j < _imagetransformation->_output->GetY(); j++) {

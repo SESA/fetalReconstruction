@@ -15,56 +15,56 @@ endif()
 
 
 # CUDA
-option(CUDA_BUILD_EMULATION "enable emulation mode" OFF)
-find_package(CUDA REQUIRED COMPONENTS sdk npp thrust)
+#option(CUDA_BUILD_EMULATION "enable emulation mode" OFF)
+#find_package(CUDA REQUIRED COMPONENTS sdk npp thrust)
 # FindCUDA.cmake of CMake 2.8.7 does not look for NPP
-if (NOT DEFINED CUDA_npp_LIBRARY AND COMMAND find_cuda_helper_libs AND NOT CUDA_VERSION VERSION_LESS "4.0")
-  find_cuda_helper_libs(npp)
-endif ()
-include_directories(${CUDA_INCLUDE_DIRS})
+#if (NOT DEFINED CUDA_npp_LIBRARY AND COMMAND find_cuda_helper_libs AND NOT CUDA_VERSION VERSION_LESS "4.0")
+#  find_cuda_helper_libs(npp)
+#endif ()
+#include_directories(${CUDA_INCLUDE_DIRS})
 #message("CUDA_INCLUDE_DIRS: ${CUDA_INCLUDE_DIRS}")
 # hide variable as SDK now (usually) part of CUDA Toolkit
 # mark_as_advanced(FORCE CUDA_SDK_ROOT_DIR)
 # additional directories where to look for SDK which are
 # not yet added in FindCUDA.cmake of CMake
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "$ENV{CUDA_SDK_INCLUDE_DIR}") 
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-5.5-sdk/NVIDIA_CUDA-5.5_Samples/")
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.0-sdk/NVIDIA_CUDA-6.0_Samples/")
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/opt/cuda-6.0/samples")
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.5/samples")
-if(WIN32)
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "[HKEY_LOCAL_MACHINE\\SOFTWARE\\NVIDIA Corporation\\Installed Products\\NVIDIA SDK 10\\Compute;InstallDir]") 
-endif()
-list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "C:/ProgramData/NVIDIA Corporation/CUDA Samples/v5.5/") 
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "$ENV{CUDA_SDK_INCLUDE_DIR}") 
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-5.5-sdk/NVIDIA_CUDA-5.5_Samples/")
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.0-sdk/NVIDIA_CUDA-6.0_Samples/")
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/opt/cuda-6.0/samples")
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.5/samples")
+#if(WIN32)
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "[HKEY_LOCAL_MACHINE\\SOFTWARE\\NVIDIA Corporation\\Installed Products\\NVIDIA SDK 10\\Compute;InstallDir]") 
+#endif()
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "C:/ProgramData/NVIDIA Corporation/CUDA Samples/v5.5/") 
 
-find_path(CUDA_HELPER_INCLUDE_DIR
-  helper_cuda.h
-  PATHS          ${INTERNAL_CUDA_SDK_SEARCH_PATH}
-  PATH_SUFFIXES "/common/inc"
-  DOC           "Location of helper_cuda.h of the CUDA SDK."
-  NO_DEFAULT_PATH
-)
+#find_path(CUDA_HELPER_INCLUDE_DIR
+#  helper_cuda.h
+#  PATHS          ${INTERNAL_CUDA_SDK_SEARCH_PATH}
+#  PATH_SUFFIXES "/common/inc"
+#  DOC           "Location of helper_cuda.h of the CUDA SDK."
+#  NO_DEFAULT_PATH
+#)
 
-if (CUDA_HELPER_INCLUDE_DIR)
-  include_directories(${CUDA_HELPER_INCLUDE_DIR})
-  set(CUDA_SDK_ROOT_DIR ${CUDA_HELPER_INCLUDE_DIR})
+#if (CUDA_HELPER_INCLUDE_DIR)
+#  include_directories(${CUDA_HELPER_INCLUDE_DIR})
+#  set(CUDA_SDK_ROOT_DIR ${CUDA_HELPER_INCLUDE_DIR})
  # message("CUDA_SDK_ROOT_DIR: ${CUDA_SDK_ROOT_DIR}")
-else(CUDA_HELPER_INCLUDE_DIR)
-   message("CUDA_SDK_ROOT_DIR: really not found")	
-endif(CUDA_HELPER_INCLUDE_DIR) 
-include_directories(${CUDA_SDK_ROOT_DIR}/common/inc)
+#else(CUDA_HELPER_INCLUDE_DIR)
+#   message("CUDA_SDK_ROOT_DIR: really not found")	
+#endif(CUDA_HELPER_INCLUDE_DIR) 
+#include_directories(${CUDA_SDK_ROOT_DIR}/common/inc)
 
-if( ${CUDA_VERSION} VERSION_LESS "5")
-  message(INFO "Building with CUDA < 5.0")
-else()
-  message(STATUS "Building with CUDA >= 5.0")
+#if( ${CUDA_VERSION} VERSION_LESS "5")
+#  message(INFO "Building with CUDA < 5.0")
+#else()
+#  message(STATUS "Building with CUDA >= 5.0")
   # we build for all useful compute capabilities (C.P > 2.0)
   #set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode;arch=compute_12,code=sm_12;-gencode;arch=compute_20,code=sm_21;-gencode;arch=compute_20,code=sm_20;-gencode;arch=compute_30,code=sm_30;")
-  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-use_fast_math;")
+#  set(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS};-gencode;arch=compute_30,code=sm_30;-gencode;arch=compute_35,code=sm_35;-use_fast_math;")
   #-deviceemu -use_fast_math;
   #untested for CP < 2.0
   #set(CUDA_NVCC_FLAGS "-gencode;arch=compute_12,code=sm_12;--disable-warnings")
-endif()
+#endif()
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/contrib++/include
@@ -75,15 +75,15 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
-if(UNIX)
-set(CUDA_PROPAGATE_HOST_FLAGS OFF)
-endif(UNIX)
+#if(UNIX)
+#set(CUDA_PROPAGATE_HOST_FLAGS OFF)
+#endif(UNIX)
 
-if(BUILD_WITH_CULA)
-find_package(CULA REQUIRED)
-include_directories(${CULA_INCLUDE_DIR})
-add_definitions(-DHAVE_CULA)
-endif(BUILD_WITH_CULA)
+#if(BUILD_WITH_CULA)
+#find_package(CULA REQUIRED)
+#include_directories(${CULA_INCLUDE_DIR})
+#add_definitions(-DHAVE_CULA)
+#endif(BUILD_WITH_CULA)
 
 #need to check if Unix is sane
 # add boost dependencies
@@ -107,27 +107,28 @@ endif ()
 include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
-cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/GPUGauss)
-cuda_add_library(reconstruction_cuda_lib2 
-				reconstruction_cuda2.cu 
-				reconstruction_cuda2.cuh 
-				recon_volumeHelper.cuh 
-				GPUGauss/gaussfilter.cu 
-				GPUGauss/gaussFilterConvolution.cuh
-				GPUWorker.cpp
-				GPUWorker.h)
+#cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/GPUGauss)
+#cuda_add_library(reconstruction_cuda_lib2 
+#				reconstruction_cuda2.cu 
+#				reconstruction_cuda2.cuh 
+#				recon_volumeHelper.cuh 
+#				GPUGauss/gaussfilter.cu 
+#				GPUGauss/gaussFilterConvolution.cuh
+#				GPUWorker.cpp
+#				GPUWorker.h)
 
 add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
           irtkReconstructionGPU.h 
           perfstats.h
           stackMotionEstimator.cpp stackMotionEstimator.h)
 
-target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
+#target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
+target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES})
 
 if(UNIX)
 target_link_libraries(reconstruction_GPU2 ${Boost_LIBRARIES})
 endif(UNIX)
 
-if(BUILD_WITH_CULA)
-target_link_libraries(reconstruction_GPU2 ${CULA_LIBRARIES} )
-endif(BUILD_WITH_CULA)
+#if(BUILD_WITH_CULA)
+#target_link_libraries(reconstruction_GPU2 ${CULA_LIBRARIES} )
+#endif(BUILD_WITH_CULA)
