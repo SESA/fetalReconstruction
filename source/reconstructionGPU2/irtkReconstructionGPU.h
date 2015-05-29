@@ -58,7 +58,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "reconstruction_cuda2.h"
 
-
 #include <vector>
 using namespace std;
 
@@ -67,6 +66,10 @@ using namespace std;
 Reconstruction of volume from 2D slices
 
 */
+/* typedef struct uint3 */
+/* { */
+/*     unsigned int x, y, z; */
+/* } uint3; */
 
 /*struct POINT3D
 {

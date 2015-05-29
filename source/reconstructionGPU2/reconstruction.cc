@@ -59,6 +59,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>  
 //#include <irtkEvaluation.h>
 #include <boost/program_options.hpp>
+#include "utils.h"
 
 namespace po = boost::program_options;
 
@@ -549,10 +550,15 @@ int main(int argc, char **argv)
   tmpStacks.erase(tmpStacks.begin(), tmpStacks.end());
 
   std::vector<uint3> stack_sizes;
+  uint3 temp; // = (uint3) malloc(sizeof(uint3));
   //std::cout << "Stack sizes: "<< std::endl;
   for (int i = 0; i < stacks.size(); i++)
   {
-    stack_sizes.push_back(make_uint3(stacks[i].GetX(), stacks[i].GetY(), stacks[i].GetZ()));
+      temp.x = stacks[i].GetX();
+      temp.y = stacks[i].GetY();
+      temp.z = stacks[i].GetZ();
+      stack_sizes.push_back(temp);
+      //stack_sizes.push_back(make_uint3(stacks[i].GetX(), stacks[i].GetY(), stacks[i].GetZ()));
     //	std::cout << stack_sizes[i].x << " " << stack_sizes[i].y << " " << stack_sizes[i].z << " " << std::endl;
   }
 
