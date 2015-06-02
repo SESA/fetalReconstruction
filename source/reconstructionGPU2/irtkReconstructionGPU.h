@@ -61,26 +61,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <vector>
 using namespace std;
 
-/*
 
-Reconstruction of volume from 2D slices
 
-*/
-/* typedef struct uint3 */
-/* { */
-/*     unsigned int x, y, z; */
-/* } uint3; */
+//Reconstruction of volume from 2D slices
 
-/*struct POINT3D
-{
-short x;
-short y;
-short z;
-double value;
-};*/
-
-//typedef std::vector<POINT3D> VOXELCOEFFS; 
-//typedef std::vector<std::vector<VOXELCOEFFS> > SLICECOEFFS;
 
 class irtkReconstruction : public irtkObject
 {

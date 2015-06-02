@@ -57,7 +57,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <iostream>
 #include <time.h>  
-//#include <irtkEvaluation.h>
 #include <boost/program_options.hpp>
 #include "utils.h"
 
@@ -303,50 +302,6 @@ int main(int argc, char **argv)
     delete rigidTransf;
   }
 
-
-/*  if (!useCPU)
-  {
-    //default use all devices > CP 3.0 that are available
-    int nDevices;
-    //cudaGetDeviceCount(&nDevices);
-    if (nDevices < devicesToUse.size())
-    {
-      std::cerr << "FATAL ERROR: you cannot use more GPUs than you have in your rig. defaulting to max CP > 3.0 devices. " << std::endl;
-      devicesToUse.clear();
-    }
-    if (devicesToUse.empty())
-    {
-
-      for (int i = 0; i < nDevices; i++) {
-        cudaDeviceProp prop;
-        cudaGetDeviceProperties(&prop, i);
-        if (prop.major >= 3)
-        {
-          try
-          {
-            cudaError_t status = cudaSetDevice(i);
-            if (status == cudaSuccess)
-            {
-              if (devicesToUse.size() < numDevicesToUse)
-              {
-                devicesToUse.push_back(i);
-              }
-            }
-          }
-          catch (...)
-          {
-            cout << "skipping device " << i << '\n';
-          }
-        }
-      }
-    }
-    if (devicesToUse.empty())
-    {
-      std::cerr << "FATAL ERROR: no suitable devices with compute capability > 3.0 found that yre available. exiting" << std::endl;
-      return EXIT_FAILURE;
-    }
-  }
-*/
   //Create reconstruction object
   // !useCPUReg = no multithreaded GPU, only multi-GPU
   irtkReconstruction reconstruction(devicesToUse, useCPUReg, useCPU); // to emulate error for multi-threaded GPU
@@ -474,11 +429,6 @@ int main(int argc, char **argv)
 
     if (debug)
       stackPackages[20].Write("testPackage.nii.gz");
-
-    //package to reconstruction registration
-    //reconstruction.StackRegistrations(stacks,stack_transformations,templateNumber);
-    //fill stack_transformations
-    //reconstruction.StackRegistrations(stackPackages,stackPackages_transformations,0,true);
 
     //hack
     stacks = stackPackages;
@@ -678,11 +628,6 @@ int main(int argc, char **argv)
 
   //Mask all the slices
   reconstruction.MaskSlices();
-
-  /* if(!tfolder.empty())
-   {
-   reconstruction.ReadTransformation(folder);
-   }*/
 
 
   //Set sigma for the bias field smoothing
