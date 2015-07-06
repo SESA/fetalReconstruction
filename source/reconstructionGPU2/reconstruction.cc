@@ -58,6 +58,19 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <iostream>
 #include <time.h>  
 #include <boost/program_options.hpp>
+
+#include <signal.h>
+
+#include <boost/filesystem.hpp>
+
+#include <ebbrt/Context.h>
+#include <ebbrt/ContextActivation.h>
+#include <ebbrt/GlobalIdMap.h>
+#include <ebbrt/StaticIds.h>
+#include <ebbrt/NodeAllocator.h>
+#include <ebbrt/Runtime.h>
+
+#include "Printer.h"
 #include "utils.h"
 
 namespace po = boost::program_options;
@@ -81,6 +94,28 @@ const std::string currentDateTime() {
 int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
+
+  /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+                "/bm/helloworld.elf32";
+
+  ebbrt::Runtime runtime;
+  ebbrt::Context c(runtime);
+  //boost::asio::signal_set sig(c.io_service_, SIGINT);
+  //{
+  ebbrt::ContextActivation activation(c);
+      
+      // ensure clean quit on ctrl-c
+      //sig.async_wait([&c](const boost::system::error_code& ec, int signal_number) { c.io_service_.stop(); });
+      
+  Printer::Init().Then([&](ebbrt::Future<void> f)
+  {
+      f.Get();
+      ebbrt::node_allocator->AllocateNode(bindir.string());
+      c.io_service_.stop();
+  });
+  //}
+  c.Run();*/
+  
   //utility variables
   int i, ok;
   char buffer[256];
@@ -549,8 +584,9 @@ int main(int argc, char **argv)
 
   if (T1PackageSize == 0 && sfolder.empty())
   {
-    //volumetric registration
-    reconstruction.StackRegistrations(stacks, stack_transformations, templateNumber);
+      std::cout << "StackRegistrations start" << std::endl;
+      //volumetric registration
+      reconstruction.StackRegistrations(stacks, stack_transformations, templateNumber);
   }
 
   //return EXIT_SUCCESS;
@@ -562,7 +598,7 @@ int main(int argc, char **argv)
     cerr.rdbuf(strm_buffer_e);
   }
 
-
+  std::cout << "reconstruction.CreateAverage" << std::endl;
   average = reconstruction.CreateAverage(stacks, stack_transformations);
   if (debug)
     average.Write("average1.nii.gz");

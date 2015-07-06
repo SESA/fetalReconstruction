@@ -696,7 +696,7 @@ public:
     target(_target),
     offset(_offset) {
     templateNumber = _templateNumber,
-      _externalTemplate = externalTemplate;
+     _externalTemplate = externalTemplate;
   }
 
   void operator() (const blocked_range<size_t> &r) const {
@@ -723,13 +723,13 @@ public:
       registration.SetInput(&target, &source);
       registration.SetOutput(&stack_transformations[i]);
       if (_externalTemplate)
-	{
+      {
 	  registration.GuessParameterThickSlicesNMI();
-	}
+      }
       else
-	{
+      {
 	  registration.GuessParameterThickSlices();
-	}
+      }
       registration.SetTargetPadding(0);
       registration.Run();
 
@@ -745,10 +745,10 @@ public:
         //buffer to create the name
         char buffer[256];
         registration.irtkImageRegistration::Write((char *) "parout-volume.rreg");
-        sprintf(buffer, "stack-transformation%i.dof.gz", i);
+        sprintf(buffer, "stack-transformation%i.dof.gz", (int) i);
         stack_transformations[i].irtkTransformation::Write(buffer);
         target.Write("target.nii.gz");
-        sprintf(buffer, "stack%i.nii.gz", i);
+        sprintf(buffer, "stack%i.nii.gz", (int) i);
         stacks[i].Write(buffer);
       }
     }
@@ -1547,7 +1547,7 @@ void irtkReconstruction::MaskSlices()
     cout << "Could not mask slices because no mask has been set." << endl;
     return;
   }
-  printf("%d %d \n", _slices.size(), _transformations.size());
+  printf("%ld %ld \n", _slices.size(), _transformations.size());
   //_mask.Write("mask.nii");
 
   //mask slices
@@ -4316,7 +4316,10 @@ void irtkReconstruction::PackageToVolume(vector<irtkRealImage>& stacks, vector<i
       rigidregistration.SetOutput(&_transformations[firstSliceIndex]);
       rigidregistration.GuessParameterSliceToVolume();
       if (_debug)
-        rigidregistration.Write("par-packages.rreg");
+      {
+	  sprintf(buffer, "par-packages.rreg");
+	  rigidregistration.Write(buffer);
+      }
       rigidregistration.Run();
 
       //undo the offset

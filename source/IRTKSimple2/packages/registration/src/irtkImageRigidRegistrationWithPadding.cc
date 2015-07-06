@@ -532,6 +532,8 @@ void irtkImageRigidRegistrationWithPadding::Finalize()
 double irtkImageRigidRegistrationWithPadding::Evaluate()
 {
 
+    std::cout << " irtkImageRigidRegistrationWithPadding:Evaluate() " << std::endl;
+    
 //  #ifndef HAS_TBB
   int i, j, k, t;
 //  #endif
