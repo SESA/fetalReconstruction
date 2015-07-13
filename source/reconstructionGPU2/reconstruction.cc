@@ -95,26 +95,24 @@ int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
 
-  /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+   auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
                 "/bm/helloworld.elf32";
 
   ebbrt::Runtime runtime;
   ebbrt::Context c(runtime);
-  //boost::asio::signal_set sig(c.io_service_, SIGINT);
-  //{
-  ebbrt::ContextActivation activation(c);
-      
-      // ensure clean quit on ctrl-c
-      //sig.async_wait([&c](const boost::system::error_code& ec, int signal_number) { c.io_service_.stop(); });
-      
-  Printer::Init().Then([&](ebbrt::Future<void> f)
+  boost::asio::signal_set sig(c.io_service_, SIGINT);
   {
+    ebbrt::ContextActivation activation(c);
+
+    // ensure clean quit on ctrl-c
+    sig.async_wait([&c](const boost::system::error_code& ec,
+                        int signal_number) { c.io_service_.stop(); });
+    Printer::Init().Then([bindir](ebbrt::Future<void> f) {
       f.Get();
       ebbrt::node_allocator->AllocateNode(bindir.string());
-      c.io_service_.stop();
-  });
-  //}
-  c.Run();*/
+    });
+  }
+  c.Run();
   
   //utility variables
   int i, ok;

@@ -72,8 +72,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/image++/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/packages/transformation/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/packages/registration/include
-	/home/handong/github/EbbRT/hosted/src/include
-	/home/handong/github/EbbRT/common/src/include
+	${EBBRT_SRCDIR}/hosted/src/include
+	${EBBRT_SRCDIR}/common/src/include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 

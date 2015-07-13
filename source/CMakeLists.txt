@@ -1,9 +1,8 @@
 project(FetalReconstruction)
 
-cmake_minimum_required(VERSION 2.8)
 cmake_policy(SET CMP0010 OLD)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake /home/handong/github/EbbRT/hosted/cmake/Modules)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake ${EBBRT_SRCDIR}/hosted/cmake/Modules)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/lib)
@@ -73,7 +72,7 @@ ENDIF (TBB_FOUND)
 
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/MathFunctions)
 #set(EBBRT_LIBRARIES ${EBBRT_LIBRARIES} MathFunctions)
-#SET(CMAKE_MODULE_PATH "/home/handong/github/EbbRT/hosted/cmake/Modules")
+#SET(CMAKE_MODULE_PATH "${EBBRT_SRCDIR}/hosted/cmake/Modules")
 
 list(APPEND CMAKE_CXX_FLAGS
      "-std=c++0x ${CMAKE_CXX_FLAGS}")
@@ -90,35 +89,35 @@ include_directories(${CAPNP_INCLUDE_DIRS})
 find_package(Fdt REQUIRED)
 include_directories(${FDT_INCLUDE_DIRS})
 
-file(GLOB CapnpFiles "/home/handong/github/EbbRT/common/src/*.capnp")
+file(GLOB CapnpFiles "${EBBRT_SRCDIR}/common/src/*.capnp")
 CAPNP_GENERATE_CPP(CapnpSources CapnpHeaders ${CapnpFiles})
 
-include_directories(/home/handong/github/EbbRT/hosted/src/include)
-include_directories(/home/handong/github/EbbRT/common/src/include)
+include_directories(${EBBRT_SRCDIR}/hosted/src/include)
+include_directories(${EBBRT_SRCDIR}/common/src/include)
 include_directories(${CMAKE_BINARY_DIR})
 
 add_library(EbbRT 
   ${CapnpSources}
-  /home/handong/github/EbbRT/common/src/CapnpMessage.cc
-  /home/handong/github/EbbRT/common/src/EbbAllocator.cc
-  /home/handong/github/EbbRT/common/src/Fdt.cc
-  /home/handong/github/EbbRT/common/src/IOBuf.cc
-  /home/handong/github/EbbRT/common/src/IOBufRef.cc
-  /home/handong/github/EbbRT/common/src/Message.cc
-  /home/handong/github/EbbRT/common/src/UniqueIOBuf.cc
-  /home/handong/github/EbbRT/common/src/StaticIOBuf.cc
-  /home/handong/github/EbbRT/common/src/SharedIOBufRef.cc
-  /home/handong/github/EbbRT/hosted/src/Clock.cc
-  /home/handong/github/EbbRT/hosted/src/ContextActivation.cc
-  /home/handong/github/EbbRT/hosted/src/Context.cc
-  /home/handong/github/EbbRT/hosted/src/EventManager.cc
-  /home/handong/github/EbbRT/hosted/src/GlobalIdMap.cc
-  /home/handong/github/EbbRT/hosted/src/LocalEntry.cc
-  /home/handong/github/EbbRT/hosted/src/LocalIdMap.cc
-  /home/handong/github/EbbRT/hosted/src/Messenger.cc
-  /home/handong/github/EbbRT/hosted/src/NodeAllocator.cc
-  /home/handong/github/EbbRT/hosted/src/Runtime.cc
-  /home/handong/github/EbbRT/hosted/src/Console.cc
+  ${EBBRT_SRCDIR}/common/src/CapnpMessage.cc
+  ${EBBRT_SRCDIR}/common/src/EbbAllocator.cc
+  ${EBBRT_SRCDIR}/common/src/Fdt.cc
+  ${EBBRT_SRCDIR}/common/src/IOBuf.cc
+  ${EBBRT_SRCDIR}/common/src/IOBufRef.cc
+  ${EBBRT_SRCDIR}/common/src/Message.cc
+  ${EBBRT_SRCDIR}/common/src/UniqueIOBuf.cc
+  ${EBBRT_SRCDIR}/common/src/StaticIOBuf.cc
+  ${EBBRT_SRCDIR}/common/src/SharedIOBufRef.cc
+  ${EBBRT_SRCDIR}/hosted/src/Clock.cc
+  ${EBBRT_SRCDIR}/hosted/src/ContextActivation.cc
+  ${EBBRT_SRCDIR}/hosted/src/Context.cc
+  ${EBBRT_SRCDIR}/hosted/src/EventManager.cc
+  ${EBBRT_SRCDIR}/hosted/src/GlobalIdMap.cc
+  ${EBBRT_SRCDIR}/hosted/src/LocalEntry.cc
+  ${EBBRT_SRCDIR}/hosted/src/LocalIdMap.cc
+  ${EBBRT_SRCDIR}/hosted/src/Messenger.cc
+  ${EBBRT_SRCDIR}/hosted/src/NodeAllocator.cc
+  ${EBBRT_SRCDIR}/hosted/src/Runtime.cc
+  ${EBBRT_SRCDIR}/hosted/src/Console.cc
 )
 
 if(USE_SYSTEM_IRTK)
