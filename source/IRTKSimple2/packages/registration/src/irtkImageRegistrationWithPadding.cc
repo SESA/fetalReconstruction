@@ -41,28 +41,28 @@ void irtkImageRegistrationWithPadding::Initialize(int level)
 
   // Blur images if necessary
   if (_TargetBlurring[level] > 0) {
-    cout << "Blurring target ... ";
+//    cout << "Blurring target ... ";
     irtkGaussianBlurringWithPadding<irtkGreyPixel> blurring(_TargetBlurring[level], _TargetPadding);
     blurring.SetInput (_target);
     blurring.SetOutput(_target);
     blurring.Run();
-    cout << "done" << endl;
+    //  cout << "done" << endl;
   }
 
   if (_SourceBlurring[level] > 0) {
-    cout << "Blurring source ... ";
+      //cout << "Blurring source ... ";
     irtkGaussianBlurringWithPadding<irtkGreyPixel> blurring(_SourceBlurring[level],_SourcePadding);
     blurring.SetInput (_source);
     blurring.SetOutput(_source);
     blurring.Run();
-    cout << "done" << endl;
+    //cout << "done" << endl;
   }
 
   _target->GetPixelSize(&dx, &dy, &dz);
   temp = fabs(_TargetResolution[0][0]-dx) + fabs(_TargetResolution[0][1]-dy) + fabs(_TargetResolution[0][2]-dz);
 
   if (level > 0 || temp > 0.000001) {
-    cout << "Resampling target ... ";
+      //cout << "Resampling target ... ";
     // Create resampling filter
     irtkResamplingWithPadding<irtkGreyPixel> resample(_TargetResolution[level][0],
         _TargetResolution[level][1],
@@ -71,14 +71,14 @@ void irtkImageRegistrationWithPadding::Initialize(int level)
     resample.SetInput (_target);
     resample.SetOutput(_target);
     resample.Run();
-    cout << "done" << endl;
+    //cout << "done" << endl;
   }
 
   _source->GetPixelSize(&dx, &dy, &dz);
   temp = fabs(_SourceResolution[0][0]-dx) + fabs(_SourceResolution[0][1]-dy) + fabs(_SourceResolution[0][2]-dz);
 
   if (level > 0 || temp > 0.000001) {
-    cout << "Resampling source ... ";
+      //cout << "Resampling source ... ";
     // Create resampling filter
     irtkResamplingWithPadding<irtkGreyPixel> resample(_SourceResolution[level][0],
         _SourceResolution[level][1],
@@ -87,7 +87,7 @@ void irtkImageRegistrationWithPadding::Initialize(int level)
     resample.SetInput (_source);
     resample.SetOutput(_source);
     resample.Run();
-    cout << "done" << endl;
+    //cout << "done" << endl;
   }
 
   // Find out the min and max values in target image, ignoring padding
@@ -319,16 +319,16 @@ void irtkImageRegistrationWithPadding::Initialize(int level)
   _optimizer->SetRegistration(this);
 
   // Print some debugging information
-  cout << "Target image (reference)" << endl;
-  _target->Print();
-  cout << "Range is from " << target_min << " to " << target_max << endl;
+//  cout << "Target image (reference)" << endl;
+  //_target->Print();
+  // cout << "Range is from " << target_min << " to " << target_max << endl;
 
-  cout << "Source image (transform)" << endl;
-  _source->Print();
-  cout << "Range is from " << source_min << " to " << source_max << endl;
+  //cout << "Source image (transform)" << endl;
+  //_source->Print();
+  //cout << "Range is from " << source_min << " to " << source_max << endl;
 
   // Print initial transformation
-  cout << "Initial transformation for level = " << level+1 << endl;;
-  _transformation->Print();
+  //cout << "Initial transformation for level = " << level+1 << endl;;
+  //_transformation->Print();
 
 }

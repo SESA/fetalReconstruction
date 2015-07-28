@@ -444,6 +444,7 @@ int irtkAffineTransformation::CheckHeader(char *name)
 
 void irtkAffineTransformation::Print()
 {
+    /*
   cout.setf(ios::right);
   cout.setf(ios::fixed);
   cout.precision(4);
@@ -464,7 +465,7 @@ void irtkAffineTransformation::Print()
 
   cout.precision(6);
   cout.unsetf(ios::right);
-  cout.unsetf(ios::fixed);
+  cout.unsetf(ios::fixed);*/
 }
 
 bool irtkAffineTransformation::IsIdentity()

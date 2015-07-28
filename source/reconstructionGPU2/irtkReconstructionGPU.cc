@@ -1017,19 +1017,19 @@ public:
 
 void irtkReconstruction::SimulateSlices()
 {
-  if (_debug)
-    cout << "Simulating slices." << endl;
+    //if (_debug)
+//	cout << "Simulating slices." << endl;
 
-  ParallelSimulateSlices parallelSimulateSlices(this);
-  parallelSimulateSlices();
-
-  if (_debug)
+    ParallelSimulateSlices parallelSimulateSlices(this);
+    parallelSimulateSlices();
+    
+/*  if (_debug)
     cout << "done." << endl;
   if(_debugGPU)
     {
       _simulated_weights[40].Write("testsimweights40.nii");
       _simulated_slices[40].Write("testsimslices40.nii");
-    }
+      }*/
 }
 
 void irtkReconstruction::SimulateSlicesGPU()
@@ -1583,18 +1583,18 @@ void irtkReconstruction::UpdateSlices(vector<irtkRealImage>& stacks, vector<doub
 
 void irtkReconstruction::MaskSlices()
 {
-  cout << "Masking slices ... ";
-
-  double x, y, z;
-  int i, j;
-
-  //Check whether we have a mask
-  if (!_have_mask) {
-    cout << "Could not mask slices because no mask has been set." << endl;
-    return;
-  }
-  printf("%ld %ld \n", _slices.size(), _transformations.size());
-  //_mask.Write("mask.nii");
+    cout << "Masking slices ... ";
+    
+    double x, y, z;
+    int i, j;
+    
+    //Check whether we have a mask
+    if (!_have_mask) {
+	cout << "Could not mask slices because no mask has been set." << endl;
+	return;
+    }
+    printf("%ld %ld \n", _slices.size(), _transformations.size());
+    //_mask.Write("mask.nii");
 
   //mask slices
   for (int unsigned inputIndex = 0; inputIndex < _slices.size(); inputIndex++) {
@@ -1644,52 +1644,47 @@ public:
 
     irtkImageAttributes attr = reconstructor->_reconstructed.GetImageAttributes();
 
-    for (size_t inputIndex = r.begin(); inputIndex != r.end(); ++inputIndex) {
+    for (size_t inputIndex = r.begin(); inputIndex != r.end(); ++inputIndex)
+    {
+	irtkImageRigidRegistrationWithPadding registration;
+	irtkGreyPixel smin, smax;
+	irtkGreyImage target;
+	irtkRealImage slice, w, b, t;
+	irtkResamplingWithPadding<irtkRealPixel> resampling(attr._dx, attr._dx, attr._dx, -1);
+      
+	//target = _slices[inputIndex];
+	t = reconstructor->_slices[inputIndex];
+	resampling.SetInput(&reconstructor->_slices[inputIndex]);
+	resampling.SetOutput(&t);
+	resampling.Run();
+	target = t;
 
-      irtkImageRigidRegistrationWithPadding registration;
-      irtkGreyPixel smin, smax;
-      irtkGreyImage target;
-      irtkRealImage slice, w, b, t;
-      irtkResamplingWithPadding<irtkRealPixel> resampling(attr._dx, attr._dx, attr._dx, -1);
-      // irtkReconstruction dummy_reconstruction; // this also creats an unwanted instance of the GPU reconstruction
+	target.GetMinMax(&smin, &smax);
 
-      //target = _slices[inputIndex];
-      t = reconstructor->_slices[inputIndex];
-      resampling.SetInput(&reconstructor->_slices[inputIndex]);
-      resampling.SetOutput(&t);
-      resampling.Run();
-      target = t;
+	if (smax > -1)
+	{
+	    //put origin to zero
+	    irtkRigidTransformation offset;
+	    irtkReconstruction::ResetOrigin(target, offset);
+	    irtkMatrix mo = offset.GetMatrix();
+	    irtkMatrix m = reconstructor->_transformations[inputIndex].GetMatrix();
+	    m = m*mo;
+	    reconstructor->_transformations[inputIndex].PutMatrix(m);
+	
+	    irtkGreyImage source = reconstructor->_reconstructed;
+	    registration.SetInput(&target, &source);
+	    registration.SetOutput(&reconstructor->_transformations[inputIndex]);
+	    registration.GuessParameterSliceToVolume();
+	    registration.SetTargetPadding(-1);
+	    registration.Run();
 
-      target.GetMinMax(&smin, &smax);
-
-      if (smax > -1) {
-        //put origin to zero
-        irtkRigidTransformation offset;
-        //dummy_reconstruction.ResetOrigin(target,offset);
-        irtkReconstruction::ResetOrigin(target, offset);
-        irtkMatrix mo = offset.GetMatrix();
-        irtkMatrix m = reconstructor->_transformations[inputIndex].GetMatrix();
-        m = m*mo;
-        reconstructor->_transformations[inputIndex].PutMatrix(m);
-        //std::cout << " ofsMatrix: " << inputIndex << std::endl;
-        //reconstructor->_transformations[inputIndex].GetMatrix().Print();
-
-        irtkGreyImage source = reconstructor->_reconstructed;
-        registration.SetInput(&target, &source);
-        registration.SetOutput(&reconstructor->_transformations[inputIndex]);
-        registration.GuessParameterSliceToVolume();
-        registration.SetTargetPadding(-1);
-        registration.Run();
-
-        reconstructor->_slices_regCertainty[inputIndex] = registration.last_similarity;
-        //undo the offset
-        mo.Invert();
-        m = reconstructor->_transformations[inputIndex].GetMatrix();
-        m = m*mo;
-        reconstructor->_transformations[inputIndex].PutMatrix(m);
-      }
-
-      printf(".");
+	    reconstructor->_slices_regCertainty[inputIndex] = registration.last_similarity;
+	    //undo the offset
+	    mo.Invert();
+	    m = reconstructor->_transformations[inputIndex].GetMatrix();
+	    m = m*mo;
+	    reconstructor->_transformations[inputIndex].PutMatrix(m);
+	}
     }
   }
 
@@ -1757,15 +1752,18 @@ void irtkReconstruction::SliceToVolumeRegistrationGPU()
 void irtkReconstruction::SliceToVolumeRegistration()
 {
   if (_slices_regCertainty.size() == 0) _slices_regCertainty.resize(_slices.size());
+  
   if (_debug)
-    cout << "SliceToVolumeRegistration" << endl;
+      cout << "SliceToVolumeRegistration" << endl;
+
   ParallelSliceToVolumeRegistration registration(this);
   registration();
+
   if (_useCPUReg)
-    {
+  {
       _transformations_gpu = _transformations;
-    }
-  printf("\n");
+  }
+//  printf("\n");
 }
 
 class ParallelCoeffInit {
@@ -1791,7 +1789,7 @@ public:
       double res = vx;
 
       //start of a loop for a slice inputIndex
-      cout << inputIndex << " ";
+      //cout << inputIndex << " ";
 
       //read the slice
       irtkRealImage& slice = reconstructor->_slices[inputIndex];
@@ -1848,27 +1846,28 @@ public:
       double sum = 0;
       int i, j, k;
       for (i = 0; i < xDim; i++)
-        for (j = 0; j < yDim; j++)
-          for (k = 0; k < zDim; k++) {
-	    x = i;
-	    y = j;
-	    z = k;
-	    PSF.ImageToWorld(x, y, z);
-	    x -= cx;
-	    y -= cy;
-	    z -= cz;
-	    //continuous PSF does not need to be normalized as discrete will be
-	    PSF(i, j, k) = exp(
-			       -x * x / (2 * sigmax * sigmax) - y * y / (2 * sigmay * sigmay)
-			       - z * z / (2 * sigmaz * sigmaz));
-	    sum += PSF(i, j, k);
-          }
+      {
+	  for (j = 0; j < yDim; j++)
+	  {
+	      for (k = 0; k < zDim; k++)
+	      {
+		  x = i;
+		  y = j;
+		  z = k;
+		  PSF.ImageToWorld(x, y, z);
+		  x -= cx;
+		  y -= cy;
+		  z -= cz;
+		  //continuous PSF does not need to be normalized as discrete will be
+		  PSF(i, j, k) = exp(
+		      -x * x / (2 * sigmax * sigmax) - y * y / (2 * sigmay * sigmay)
+		      - z * z / (2 * sigmaz * sigmaz));
+		  sum += PSF(i, j, k);
+	      }
+	  }
+      }
       PSF /= sum;
-
-      if (reconstructor->_debug)
-        if (inputIndex == 0)
-          PSF.Write("PSF.nii.gz");
-
+      
       //prepare storage for PSF transformed and resampled to the space of reconstructed volume
       //maximum dim of rotated kernel - the next higher odd integer plus two to accound for rounding error of tx,ty,tz.
       //Note conversion from PSF image coordinates to tPSF image coordinates *size/res
@@ -1881,6 +1880,7 @@ public:
       attr._dx = res;
       attr._dy = res;
       attr._dz = res;
+      
       //create matrix from transformed PSF
       irtkRealImage tPSF(attr);
       //calculate centre of tPSF in image coordinates
@@ -2061,60 +2061,56 @@ public:
 
 void irtkReconstruction::CoeffInit()
 {
-  if (_debug)
-    cout << "CoeffInit" << endl;
-
-  //clear slice-volume matrix from previous iteration
-  _volcoeffs.clear();
-  _volcoeffs.resize(_slices.size());
-
-  //clear indicator of slice having and overlap with volumetric mask
-  _slice_inside_cpu.clear();
-  _slice_inside_cpu.resize(_slices.size());
-
-  cout << "Initialising matrix coefficients...";
-  ParallelCoeffInit coeffinit(this);
-  coeffinit();
-  cout << " ... done." << endl;
-
-  //prepare image for volume weights, will be needed for Gaussian Reconstruction
-  _volume_weights.Initialize(_reconstructed.GetImageAttributes());
-  _volume_weights = 0;
-
-  int inputIndex, i, j, n, k;
-  POINT3D p;
-  for (inputIndex = 0; inputIndex < _slices.size(); ++inputIndex) {
-    for (i = 0; i < _slices[inputIndex].GetX(); i++)
-      for (j = 0; j < _slices[inputIndex].GetY(); j++) {
-	n = _volcoeffs[inputIndex][i][j].size();
-	for (k = 0; k < n; k++) {
-	  p = _volcoeffs[inputIndex][i][j][k];
-	  _volume_weights(p.x, p.y, p.z) += p.value;
+    //clear slice-volume matrix from previous iteration
+    _volcoeffs.clear();
+    _volcoeffs.resize(_slices.size());
+    
+    //clear indicator of slice having and overlap with volumetric mask
+    _slice_inside_cpu.clear();
+    _slice_inside_cpu.resize(_slices.size());
+    
+    ParallelCoeffInit coeffinit(this);
+    coeffinit();
+    
+    //prepare image for volume weights, will be needed for Gaussian Reconstruction
+    _volume_weights.Initialize(_reconstructed.GetImageAttributes());
+    _volume_weights = 0;
+    
+    int inputIndex, i, j, n, k;
+    POINT3D p;
+    for (inputIndex = 0; inputIndex < _slices.size(); ++inputIndex)
+    {
+	for (i = 0; i < _slices[inputIndex].GetX(); i++)
+	{
+	    for (j = 0; j < _slices[inputIndex].GetY(); j++)
+	    {
+		n = _volcoeffs[inputIndex][i][j].size();
+		for (k = 0; k < n; k++)
+		{
+		    p = _volcoeffs[inputIndex][i][j][k];
+		    _volume_weights(p.x, p.y, p.z) += p.value;
+		}
+	    }
 	}
-      }
   }
-  if (_debug || _debugGPU)
-    _volume_weights.Write("volume_weightsCPU.nii");
-
-  //find average volume weight to modify alpha parameters accordingly
-  irtkRealPixel *ptr = _volume_weights.GetPointerToVoxels();
-  irtkRealPixel *pm = _mask.GetPointerToVoxels();
-  double sum = 0;
-  int num = 0;
-  for (int i = 0; i < _volume_weights.GetNumberOfVoxels(); i++) {
-    if (*pm == 1) {
-      sum += *ptr;
-      num++;
+    
+    //find average volume weight to modify alpha parameters accordingly
+    irtkRealPixel *ptr = _volume_weights.GetPointerToVoxels();
+    irtkRealPixel *pm = _mask.GetPointerToVoxels();
+    double sum = 0;
+    int num = 0;
+    for (int i = 0; i < _volume_weights.GetNumberOfVoxels(); i++)
+    {
+	if (*pm == 1)
+	{
+	    sum += *ptr;
+	    num++;
+	}
+	ptr++;
+	pm++;
     }
-    ptr++;
-    pm++;
-  }
-  _average_volume_weight = sum / num;
-
-  if (_debug) {
-    cout << "Average volume weight is " << _average_volume_weight << endl;
-  }
-
+    _average_volume_weight = sum / num;
+        
 }  //end of CoeffInit()
 
 void irtkReconstruction::SyncCPU()
@@ -2148,73 +2144,74 @@ void irtkReconstruction::GaussianReconstruction()
   //vector<int> voxel_num_;  
   //reconstructionGPU->GaussianReconstruction(voxel_num_);
 
-  cout << "Gaussian reconstruction ... ";
-  unsigned int inputIndex;
-  int i, j, k, n;
-  irtkRealImage slice;
-  double scale;
-  POINT3D p;
-  vector<int> voxel_num;
-  int slice_vox_num;
+    //cout << "Gaussian reconstruction ... ";
+    unsigned int inputIndex;
+    int i, j, k, n;
+    irtkRealImage slice;
+    double scale;
+    POINT3D p;
+    vector<int> voxel_num;
+    int slice_vox_num;
 
-  //clear _reconstructed image
-  _reconstructed = 0;
-
+    //clear _reconstructed image
+    _reconstructed = 0;
+    
   //std::cout << "voxel_num CPU: ";
   //CPU
-  for (inputIndex = 0; inputIndex < _slices.size(); ++inputIndex) {
-    //copy the current slice
-    slice = _slices[inputIndex];
-    //alias the current bias image
-    irtkRealImage& b = _bias[inputIndex];
-    //read current scale factor
-    scale = _scale_cpu[inputIndex];
-
-    slice_vox_num = 0;
-
-    //Distribute slice intensities to the volume
-    for (i = 0; i < slice.GetX(); i++)
-      for (j = 0; j < slice.GetY(); j++)
-        if (slice(i, j, 0) != -1) {
-	  //biascorrect and scale the slice
-	  slice(i, j, 0) *= exp(-b(i, j, 0)) * scale;
-
-	  //number of volume voxels with non-zero coefficients
-	  //for current slice voxel
-	  n = _volcoeffs[inputIndex][i][j].size();
-
-	  //if given voxel is not present in reconstructed volume at all,
-	  //pad it
-
-	  //if (n == 0)
-	  //_slices[inputIndex].PutAsDouble(i, j, 0, -1);
-	  //calculate num of vox in a slice that have overlap with roi
-	  if (n > 0)
-	    slice_vox_num++;
-
-	  //add contribution of current slice voxel to all voxel volumes
-	  //to which it contributes
-	  for (k = 0; k < n; k++) {
-	    p = _volcoeffs[inputIndex][i][j][k];
-	    _reconstructed(p.x, p.y, p.z) += p.value * slice(i, j, 0);
-	  }
-	  //debug
-	  //p = _volcoeffs[inputIndex][i][j][0];
-	  //_reconstructed(p.x, p.y, p.z) += slice(i, j, 0);
-        }
-    voxel_num.push_back(slice_vox_num);
-    //std::cout << voxel_num[inputIndex] << " ";
-    //end of loop for a slice inputIndex
-  }
-
-  //normalize the volume by proportion of contributing slice voxels
-  //for each volume voxe
-  _reconstructed /= _volume_weights;
-
-  cout << "done." << endl;
-
-  if (_debug)
-    _reconstructed.Write("init.nii.gz");
+    for (inputIndex = 0; inputIndex < _slices.size(); ++inputIndex)
+    {
+	//copy the current slice
+	slice = _slices[inputIndex];
+	//alias the current bias image
+	irtkRealImage& b = _bias[inputIndex];
+	//read current scale factor
+	scale = _scale_cpu[inputIndex];
+	
+	slice_vox_num = 0;
+	
+	//Distribute slice intensities to the volume
+	for (i = 0; i < slice.GetX(); i++)
+	    for (j = 0; j < slice.GetY(); j++)
+		if (slice(i, j, 0) != -1) {
+		    //biascorrect and scale the slice
+		    slice(i, j, 0) *= exp(-b(i, j, 0)) * scale;
+		    
+		    //number of volume voxels with non-zero coefficients
+		    //for current slice voxel
+		    n = _volcoeffs[inputIndex][i][j].size();
+		    
+		    //if given voxel is not present in reconstructed volume at all,
+		    //pad it
+		    
+		    //if (n == 0)
+		    //_slices[inputIndex].PutAsDouble(i, j, 0, -1);
+		    //calculate num of vox in a slice that have overlap with roi
+		    if (n > 0)
+			slice_vox_num++;
+		    
+		    //add contribution of current slice voxel to all voxel volumes
+		    //to which it contributes
+		    for (k = 0; k < n; k++) {
+			p = _volcoeffs[inputIndex][i][j][k];
+			_reconstructed(p.x, p.y, p.z) += p.value * slice(i, j, 0);
+		    }
+		    //debug
+		    //p = _volcoeffs[inputIndex][i][j][0];
+		    //_reconstructed(p.x, p.y, p.z) += slice(i, j, 0);
+		}
+	voxel_num.push_back(slice_vox_num);
+	//std::cout << voxel_num[inputIndex] << " ";
+	//end of loop for a slice inputIndex
+    }
+    
+    //normalize the volume by proportion of contributing slice voxels
+    //for each volume voxe
+    _reconstructed /= _volume_weights;
+    
+    //cout << "done." << endl;
+    
+    //if (_debug)
+    //_reconstructed.Write("init.nii.gz");
 
   //now find slices with small overlap with ROI and exclude them.
 
@@ -2232,12 +2229,12 @@ void irtkReconstruction::GaussianReconstruction()
     if (voxel_num[i] < 0.1*median)
       _small_slices.push_back(i);
 
-  if (_debug || _debugGPU) {
+/*  if (_debug || _debugGPU) {
     cout << "Small slices CPU:";
     for (i = 0; i < _small_slices.size(); i++)
       cout << " " << _small_slices[i];
     cout << endl;
-  }
+    }*/
 }
 
 void irtkReconstruction::InitializeEM()
@@ -2335,34 +2332,35 @@ void irtkReconstruction::InitializeEMGPU()
 
 void irtkReconstruction::InitializeEMValues()
 {
-  if (_debug)
-    cout << "InitializeEMValues" << endl;
-
-  for (unsigned int i = 0; i < _slices.size(); i++) {
-    //Initialise voxel weights and bias values
-    irtkRealPixel *pw = _weights[i].GetPointerToVoxels();
-    irtkRealPixel *pb = _bias[i].GetPointerToVoxels();
-    irtkRealPixel *pi = _slices[i].GetPointerToVoxels();
-    for (int j = 0; j < _weights[i].GetNumberOfVoxels(); j++) {
-      if (*pi != -1) {
-        *pw = 1;
-        *pb = 0;
-      }
-      else {
-        *pw = 0;
-        *pb = 0;
-      }
-      pi++;
-      pw++;
-      pb++;
+    for (unsigned int i = 0; i < _slices.size(); i++)
+    {
+	//Initialise voxel weights and bias values
+	irtkRealPixel *pw = _weights[i].GetPointerToVoxels();
+	irtkRealPixel *pb = _bias[i].GetPointerToVoxels();
+	irtkRealPixel *pi = _slices[i].GetPointerToVoxels();
+	for (int j = 0; j < _weights[i].GetNumberOfVoxels(); j++)
+	{
+	    if (*pi != -1)
+	    {
+		*pw = 1;
+		*pb = 0;
+	    }
+	    else
+	    {
+		*pw = 0;
+		*pb = 0;
+	    }
+	    pi++;
+	    pw++;
+	    pb++;
+	}
+	
+	//Initialise slice weights
+	_slice_weight_cpu[i] = 1;
+	
+	//Initialise scaling factors for intensity matching
+	_scale_cpu[i] = 1;
     }
-
-    //Initialise slice weights
-    _slice_weight_cpu[i] = 1;
-
-    //Initialise scaling factors for intensity matching
-    _scale_cpu[i] = 1;
-  }
 }
 
 
@@ -2402,56 +2400,58 @@ void irtkReconstruction::InitializeRobustStatisticsGPU()
 
 void irtkReconstruction::InitializeRobustStatistics()
 {
-  if (_debug)
-    cout << "InitializeRobustStatistics" << endl;
+    //if (_debug)
+    //cout << "InitializeRobustStatistics" << endl;
 
-  //Initialise parameter of EM robust statistics
-  int i, j;
-  irtkRealImage slice, sim;
-  double sigma = 0;
-  int num = 0;
-
-  //for each slice
-  for (unsigned int inputIndex = 0; inputIndex < _slices.size(); inputIndex++) {
-    slice = _slices[inputIndex];
-
-    //Voxel-wise sigma will be set to stdev of volumetric errors
-    //For each slice voxel
-    for (i = 0; i < slice.GetX(); i++)
-      for (j = 0; j < slice.GetY(); j++)
-        if (slice(i, j, 0) != -1) {
-	  //calculate stev of the errors
-	  if ((_simulated_inside[inputIndex](i, j, 0) == 1)
-	      && (_simulated_weights[inputIndex](i, j, 0) > 0.99)) {
-	    slice(i, j, 0) -= _simulated_slices[inputIndex](i, j, 0);
-	    sigma += slice(i, j, 0) * slice(i, j, 0);
-	    num++;
-	  }
-        }
-
-    //if slice does not have an overlap with ROI, set its weight to zero
-    if (!_slice_inside_cpu[inputIndex])
-      _slice_weight_cpu[inputIndex] = 0;
-  }
-
-  //Force exclusion of slices predefined by user
-  for (unsigned int i = 0; i < _force_excluded.size(); i++)
-    _slice_weight_cpu[_force_excluded[i]] = 0;
-
-  //initialize sigma for voxelwise robust statistics
-  _sigma_cpu = sigma / num;
-  //initialize sigma for slice-wise robust statistics
-  _sigma_s_cpu = 0.025;
-  //initialize mixing proportion for inlier class in voxel-wise robust statistics
-  _mix_cpu = 0.9;
-  //initialize mixing proportion for outlier class in slice-wise robust statistics
-  _mix_s_cpu = 0.9;
-  //Initialise value for uniform distribution according to the range of intensities
-  _m_cpu = 1 / (2.1 * _max_intensity - 1.9 * _min_intensity);
-
-  if (_debug || _debugGPU)
-    cout << "Initializing robust statistics CPU: " << "sigma=" << sqrt(_sigma_cpu) << " " << "m=" << _m_cpu
-	 << " " << "mix=" << _mix_cpu << " " << "mix_s=" << _mix_s_cpu << endl;
+    //Initialise parameter of EM robust statistics
+    int i, j;
+    irtkRealImage slice, sim;
+    double sigma = 0;
+    int num = 0;
+    
+    //for each slice
+    for (unsigned int inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
+    {
+	slice = _slices[inputIndex];
+	
+	//Voxel-wise sigma will be set to stdev of volumetric errors
+	//For each slice voxel
+	for (i = 0; i < slice.GetX(); i++)
+	    for (j = 0; j < slice.GetY(); j++)
+		if (slice(i, j, 0) != -1) {
+		    //calculate stev of the errors
+		    if ((_simulated_inside[inputIndex](i, j, 0) == 1)
+			&& (_simulated_weights[inputIndex](i, j, 0) > 0.99)) {
+			slice(i, j, 0) -= _simulated_slices[inputIndex](i, j, 0);
+			sigma += slice(i, j, 0) * slice(i, j, 0);
+			num++;
+		    }
+		}
+	
+	//if slice does not have an overlap with ROI, set its weight to zero
+	if (!_slice_inside_cpu[inputIndex])
+	    _slice_weight_cpu[inputIndex] = 0;
+    }
+    
+    //Force exclusion of slices predefined by user
+    for (unsigned int i = 0; i < _force_excluded.size(); i++)
+	_slice_weight_cpu[_force_excluded[i]] = 0;
+    
+    //initialize sigma for voxelwise robust statistics
+    _sigma_cpu = sigma / num;
+    //initialize sigma for slice-wise robust statistics
+    _sigma_s_cpu = 0.025;
+    //initialize mixing proportion for inlier class in voxel-wise robust statistics
+    _mix_cpu = 0.9;
+    //initialize mixing proportion for outlier class in slice-wise robust statistics
+    _mix_s_cpu = 0.9;
+    //Initialise value for uniform distribution according to the range of intensities
+    _m_cpu = 1 / (2.1 * _max_intensity - 1.9 * _min_intensity);
+    
+    /*if (_debug || _debugGPU)
+	cout << "Initializing robust statistics CPU: " << "sigma=" << sqrt(_sigma_cpu) << " " << "m=" << _m_cpu
+	     << " " << "mix=" << _mix_cpu << " " << "mix_s=" << _mix_s_cpu << endl;
+    */
 }
 
 class ParallelEStep {
@@ -2754,8 +2754,8 @@ void irtkReconstruction::EStepGPU()
 void irtkReconstruction::EStep()
 {
   //EStep performs calculation of voxel-wise and slice-wise posteriors (weights)
-  if (_debug)
-    cout << "EStep: " << endl;
+//  if (_debug)
+    //  cout << "EStep: " << endl;
 
   unsigned int inputIndex;
   irtkRealImage slice, w, b, sim;
@@ -2765,26 +2765,26 @@ void irtkReconstruction::EStep()
   ParallelEStep parallelEStep(this, slice_potential_cpu);
   parallelEStep();
 
-  if(_debugGPU)
+/*  if(_debugGPU)
     {
       _weights[40].Write("testweightCPU.nii");
-    }
+      }*/
 
   //To force-exclude slices predefined by a user, set their potentials to -1
   for (unsigned int i = 0; i < _force_excluded.size(); i++)
-    slice_potential_cpu[_force_excluded[i]] = -1;
+      slice_potential_cpu[_force_excluded[i]] = -1;
 
   //exclude slices identified as having small overlap with ROI, set their potentials to -1
   for (unsigned int i = 0; i < _small_slices.size(); i++)
-    slice_potential_cpu[_small_slices[i]] = -1;
-
+      slice_potential_cpu[_small_slices[i]] = -1;
+  
   //these are unrealistic scales pointing at misregistration - exclude the corresponding slices
   for (inputIndex = 0; inputIndex < slice_potential_cpu.size(); inputIndex++)
-    if ((_scale_cpu[inputIndex] < 0.2) || (_scale_cpu[inputIndex]>5)) {
-      slice_potential_cpu[inputIndex] = -1;
-    }
-
-  if (_debug || _debugGPU) {
+      if ((_scale_cpu[inputIndex] < 0.2) || (_scale_cpu[inputIndex]>5)) {
+	  slice_potential_cpu[inputIndex] = -1;
+      }
+  
+/*  if (_debug || _debugGPU) {
     cout << setprecision(4);
     cout << endl << "Slice potentials CPU: ";
     for (inputIndex = 0; inputIndex < slice_potential_cpu.size(); inputIndex++)
@@ -2793,7 +2793,7 @@ void irtkReconstruction::EStep()
     for (inputIndex = 0; inputIndex < _slice_weight_cpu.size(); inputIndex++)
       cout << _slice_weight_cpu[inputIndex] << " ";
     cout << endl;
-  }
+    }*/
 
 
   //Calulation of slice-wise robust statistics parameters.
@@ -2804,144 +2804,145 @@ void irtkReconstruction::EStep()
   //Calculate means of the inlier and outlier potentials
   double sum = 0, den = 0, sum2 = 0, den2 = 0, maxs = 0, mins = 1;
   for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
-    if (slice_potential_cpu[inputIndex] >= 0) {
-      //calculate means
-      sum += slice_potential_cpu[inputIndex] * _slice_weight_cpu[inputIndex];
-      den += _slice_weight_cpu[inputIndex];
-      sum2 += slice_potential_cpu[inputIndex] * (1 - _slice_weight_cpu[inputIndex]);
-      den2 += (1 - _slice_weight_cpu[inputIndex]);
-
-      //calculate min and max of potentials in case means need to be initalized
-      if (slice_potential_cpu[inputIndex] > maxs)
-	maxs = slice_potential_cpu[inputIndex];
-      if (slice_potential_cpu[inputIndex] < mins)
-	mins = slice_potential_cpu[inputIndex];
-    }
-
+      if (slice_potential_cpu[inputIndex] >= 0) {
+	  //calculate means
+	  sum += slice_potential_cpu[inputIndex] * _slice_weight_cpu[inputIndex];
+	  den += _slice_weight_cpu[inputIndex];
+	  sum2 += slice_potential_cpu[inputIndex] * (1 - _slice_weight_cpu[inputIndex]);
+	  den2 += (1 - _slice_weight_cpu[inputIndex]);
+	  
+	  //calculate min and max of potentials in case means need to be initalized
+	  if (slice_potential_cpu[inputIndex] > maxs)
+	      maxs = slice_potential_cpu[inputIndex];
+	  if (slice_potential_cpu[inputIndex] < mins)
+	      mins = slice_potential_cpu[inputIndex];
+      }
+  
   if (den > 0)
-    _mean_s_cpu = sum / den;
+      _mean_s_cpu = sum / den;
   else
-    _mean_s_cpu = mins;
-
+      _mean_s_cpu = mins;
+  
   if (den2 > 0)
-    _mean_s2_cpu = sum2 / den2;
+      _mean_s2_cpu = sum2 / den2;
   else
-    _mean_s2_cpu = (maxs + _mean_s_cpu) / 2;
-
+      _mean_s2_cpu = (maxs + _mean_s_cpu) / 2;
+  
   //Calculate the variances of the potentials
   sum = 0;
   den = 0;
   sum2 = 0;
   den2 = 0;
   for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
-    if (slice_potential_cpu[inputIndex] >= 0) {
-      sum += (slice_potential_cpu[inputIndex] - _mean_s_cpu) * (slice_potential_cpu[inputIndex] - _mean_s_cpu)
-	* _slice_weight_cpu[inputIndex];
-      den += _slice_weight_cpu[inputIndex];
-
-      sum2 += (slice_potential_cpu[inputIndex] - _mean_s2_cpu) * (slice_potential_cpu[inputIndex] - _mean_s2_cpu)
-	* (1 - _slice_weight_cpu[inputIndex]);
-      den2 += (1 - _slice_weight_cpu[inputIndex]);
-
-    }
-
+      if (slice_potential_cpu[inputIndex] >= 0) {
+	  sum += (slice_potential_cpu[inputIndex] - _mean_s_cpu) * (slice_potential_cpu[inputIndex] - _mean_s_cpu)
+	      * _slice_weight_cpu[inputIndex];
+	  den += _slice_weight_cpu[inputIndex];
+	  
+	  sum2 += (slice_potential_cpu[inputIndex] - _mean_s2_cpu) * (slice_potential_cpu[inputIndex] - _mean_s2_cpu)
+	      * (1 - _slice_weight_cpu[inputIndex]);
+	  den2 += (1 - _slice_weight_cpu[inputIndex]);
+	  
+      }
+  
   //_sigma_s
   if ((sum > 0) && (den > 0)) {
-    _sigma_s_cpu = sum / den;
-    //do not allow too small sigma
-    if (_sigma_s_cpu < _step * _step / 6.28)
-      _sigma_s_cpu = _step * _step / 6.28;
+      _sigma_s_cpu = sum / den;
+      //do not allow too small sigma
+      if (_sigma_s_cpu < _step * _step / 6.28)
+	  _sigma_s_cpu = _step * _step / 6.28;
   }
   else {
-    _sigma_s_cpu = 0.025;
-    if (_debug) {
-      if (sum <= 0)
-        cout << "All slices are equal. ";
-      if (den < 0) //this should not happen
-        cout << "All slices are outliers. ";
-      cout << "Setting sigma to " << sqrt(_sigma_s_cpu) << endl;
-    }
+      _sigma_s_cpu = 0.025;
+      /*if (_debug) {
+	  if (sum <= 0)
+	      cout << "All slices are equal. ";
+	  if (den < 0) //this should not happen
+	      cout << "All slices are outliers. ";
+	  cout << "Setting sigma to " << sqrt(_sigma_s_cpu) << endl;
+	  }*/
   }
-
+  
   //sigma_s2
   if ((sum2 > 0) && (den2 > 0)) {
-    _sigma_s2_cpu = sum2 / den2;
-    //do not allow too small sigma
-    if (_sigma_s2_cpu < _step * _step / 6.28)
-      _sigma_s2_cpu = _step * _step / 6.28;
+      _sigma_s2_cpu = sum2 / den2;
+      //do not allow too small sigma
+      if (_sigma_s2_cpu < _step * _step / 6.28)
+	  _sigma_s2_cpu = _step * _step / 6.28;
   }
   else {
-    _sigma_s2_cpu = (_mean_s2_cpu - _mean_s_cpu) * (_mean_s2_cpu - _mean_s_cpu) / 4;
-    //do not allow too small sigma
-    if (_sigma_s2_cpu < _step * _step / 6.28)
-      _sigma_s2_cpu = _step * _step / 6.28;
-
-    if (_debug) {
+      _sigma_s2_cpu = (_mean_s2_cpu - _mean_s_cpu) * (_mean_s2_cpu - _mean_s_cpu) / 4;
+      //do not allow too small sigma
+      if (_sigma_s2_cpu < _step * _step / 6.28)
+	  _sigma_s2_cpu = _step * _step / 6.28;
+      
+      /*if (_debug) {
       if (sum2 <= 0)
         cout << "All slices are equal. ";
       if (den2 <= 0)
         cout << "All slices inliers. ";
       cout << "Setting sigma_s2 to " << sqrt(_sigma_s2_cpu) << endl;
-    }
+      }*/
   }
 
   //Calculate slice weights
   double gs1, gs2;
   for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++) {
-    //Slice does not have any voxels in volumetric ROI
-    if (slice_potential_cpu[inputIndex] == -1) {
-      _slice_weight_cpu[inputIndex] = 0;
-      continue;
-    }
-
-    //All slices are outliers or the means are not valid
-    if ((den <= 0) || (_mean_s2_cpu <= _mean_s_cpu)) {
-      _slice_weight_cpu[inputIndex] = 1;
-      continue;
-    }
-
-    //likelihood for inliers
-    if (slice_potential_cpu[inputIndex] < _mean_s2_cpu)
-      gs1 = G(slice_potential_cpu[inputIndex] - _mean_s_cpu, _sigma_s_cpu);
-    else
-      gs1 = 0;
-
-    //likelihood for outliers
-    if (slice_potential_cpu[inputIndex] > _mean_s_cpu)
-      gs2 = G(slice_potential_cpu[inputIndex] - _mean_s2_cpu, _sigma_s2_cpu);
-    else
-      gs2 = 0;
-
-    //calculate slice weight
-    double likelihood = gs1 * _mix_s_cpu + gs2 * (1 - _mix_s_cpu);
-    if (likelihood > 0)
-      _slice_weight_cpu[inputIndex] = gs1 * _mix_s_cpu / likelihood;
-    else {
-      if (slice_potential_cpu[inputIndex] <= _mean_s_cpu)
-        _slice_weight_cpu[inputIndex] = 1;
-      if (slice_potential_cpu[inputIndex] >= _mean_s2_cpu)
-        _slice_weight_cpu[inputIndex] = 0;
-      if ((slice_potential_cpu[inputIndex] < _mean_s2_cpu) && (slice_potential_cpu[inputIndex] > _mean_s_cpu)) //should not happen
-        _slice_weight_cpu[inputIndex] = 1;
-    }
+      //Slice does not have any voxels in volumetric ROI
+      if (slice_potential_cpu[inputIndex] == -1) {
+	  _slice_weight_cpu[inputIndex] = 0;
+	  continue;
+      }
+      
+      //All slices are outliers or the means are not valid
+      if ((den <= 0) || (_mean_s2_cpu <= _mean_s_cpu)) {
+	  _slice_weight_cpu[inputIndex] = 1;
+	  continue;
+      }
+      
+      //likelihood for inliers
+      if (slice_potential_cpu[inputIndex] < _mean_s2_cpu)
+	  gs1 = G(slice_potential_cpu[inputIndex] - _mean_s_cpu, _sigma_s_cpu);
+      else
+	  gs1 = 0;
+      
+      //likelihood for outliers
+      if (slice_potential_cpu[inputIndex] > _mean_s_cpu)
+	  gs2 = G(slice_potential_cpu[inputIndex] - _mean_s2_cpu, _sigma_s2_cpu);
+      else
+	  gs2 = 0;
+      
+      //calculate slice weight
+      double likelihood = gs1 * _mix_s_cpu + gs2 * (1 - _mix_s_cpu);
+      if (likelihood > 0)
+	  _slice_weight_cpu[inputIndex] = gs1 * _mix_s_cpu / likelihood;
+      else {
+	  if (slice_potential_cpu[inputIndex] <= _mean_s_cpu)
+	      _slice_weight_cpu[inputIndex] = 1;
+	  if (slice_potential_cpu[inputIndex] >= _mean_s2_cpu)
+	      _slice_weight_cpu[inputIndex] = 0;
+	  if ((slice_potential_cpu[inputIndex] < _mean_s2_cpu) && (slice_potential_cpu[inputIndex] > _mean_s_cpu)) //should not happen
+	      _slice_weight_cpu[inputIndex] = 1;
+      }
   }
-
+  
   //Update _mix_s this should also be part of MStep
   sum = 0;
   num = 0;
   for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
-    if (slice_potential_cpu[inputIndex] >= 0) {
-      sum += _slice_weight_cpu[inputIndex];
-      num++;
-    }
-
+      if (slice_potential_cpu[inputIndex] >= 0) {
+	  sum += _slice_weight_cpu[inputIndex];
+	  num++;
+      }
+  
   if (num > 0)
-    _mix_s_cpu = sum / num;
+      _mix_s_cpu = sum / num;
   else {
-    cout << "All slices are outliers. Setting _mix_s to 0.9." << endl;
-    _mix_s_cpu = 0.9;
+      //cout << "All slices are outliers. Setting _mix_s to 0.9." << endl;
+      _mix_s_cpu = 0.9;
   }
 
+  /*
   if (_debug || _debugGPU) {
     cout << setprecision(3);
     cout << "Slice robust statistics parameters CPU: ";
@@ -2951,11 +2952,8 @@ void irtkReconstruction::EStep()
     cout << "Slice weights  CPU: ";
     for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
       cout << _slice_weight_cpu[inputIndex] << " ";
-    /*cout << "Slice potential: ";
-      for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++)
-      cout << slice_potential[inputIndex] << " ";*/
-    cout << endl;
-  }
+      cout << endl;
+  }*/
 
 }
 
@@ -3031,8 +3029,8 @@ void irtkReconstruction::ScaleGPU()
 
 void irtkReconstruction::Scale()
 {
-  if (_debug)
-    cout << "Scale" << endl;
+//  if (_debug)
+    //  cout << "Scale" << endl;
 
   ParallelScale parallelScale(this);
   parallelScale();
@@ -3190,16 +3188,16 @@ void irtkReconstruction::BiasGPU()
 
 void irtkReconstruction::Bias()
 {
-  if (_debug)
-    cout << "Correcting bias ...";
+    //if (_debug)
+    //cout << "Correcting bias ...";
 
   ParallelBias parallelBias(this);
   parallelBias();
 
-  _bias[79].Write("biasField79CPU.nii");
+  //_bias[79].Write("biasField79CPU.nii");
 
-  if (_debug)
-    cout << "done. " << endl;
+  //if (_debug)
+  //cout << "done. " << endl;
 }
 
 class ParallelSuperresolution {
@@ -3318,68 +3316,49 @@ void irtkReconstruction::SuperresolutionGPU(int iter)
 
 void irtkReconstruction::Superresolution(int iter)
 {
-  if (_debug)
-    cout << "Superresolution " << iter << endl;
+    //if (_debug)
+    //cout << "Superresolution " << iter << endl;
 
-  int i, j, k;
-  irtkRealImage addon, original;
+    int i, j, k;
+    irtkRealImage addon, original;
+    
+    //Remember current reconstruction for edge-preserving smoothing
+    original = _reconstructed;
+    
+    ParallelSuperresolution parallelSuperresolution(this);
+    parallelSuperresolution();
+    addon = parallelSuperresolution.addon;
+    _confidence_map = parallelSuperresolution.confidence_map;
+    
+    if (!_adaptive)
+	for (i = 0; i < addon.GetX(); i++)
+	    for (j = 0; j < addon.GetY(); j++)
+		for (k = 0; k < addon.GetZ(); k++)
+		    if (_confidence_map(i, j, k) > 0) {
+			// ISSUES if _confidence_map(i, j, k) is too small leading
+			// to bright pixels
+			addon(i, j, k) /= _confidence_map(i, j, k);
+			//this is to revert to normal (non-adaptive) regularisation
+			_confidence_map(i, j, k) = 1;
+		    }
+    
+    _reconstructed += addon * _alpha; //_average_volume_weight;
 
-  //Remember current reconstruction for edge-preserving smoothing
-  original = _reconstructed;
+    //bound the intensities
+    for (i = 0; i < _reconstructed.GetX(); i++)
+	for (j = 0; j < _reconstructed.GetY(); j++)
+	    for (k = 0; k < _reconstructed.GetZ(); k++) {
+		if (_reconstructed(i, j, k) < _min_intensity * 0.9)
+		    _reconstructed(i, j, k) = _min_intensity * 0.9;
+		if (_reconstructed(i, j, k) > _max_intensity * 1.1)
+		    _reconstructed(i, j, k) = _max_intensity * 1.1;
+	    }
 
-  ParallelSuperresolution parallelSuperresolution(this);
-  parallelSuperresolution();
-  addon = parallelSuperresolution.addon;
-  _confidence_map = parallelSuperresolution.confidence_map;
-  //_confidence4mask = _confidence_map;
-
-  if (_debug) {
-    char buffer[256];
-    sprintf(buffer, "confidence-map%i.nii.gz", iter);
-    _confidence_map.Write(buffer);
-    sprintf(buffer, "addon%i.nii.gz", iter);
-    addon.Write(buffer);
-  }
-
-  if (!_adaptive)
-    for (i = 0; i < addon.GetX(); i++)
-      for (j = 0; j < addon.GetY(); j++)
-        for (k = 0; k < addon.GetZ(); k++)
-          if (_confidence_map(i, j, k) > 0) {
-	    // ISSUES if _confidence_map(i, j, k) is too small leading
-	    // to bright pixels
-	    addon(i, j, k) /= _confidence_map(i, j, k);
-	    //this is to revert to normal (non-adaptive) regularisation
-	    _confidence_map(i, j, k) = 1;
-          }
-
-  _reconstructed += addon * _alpha; //_average_volume_weight;
-
-  //bound the intensities
-  for (i = 0; i < _reconstructed.GetX(); i++)
-    for (j = 0; j < _reconstructed.GetY(); j++)
-      for (k = 0; k < _reconstructed.GetZ(); k++) {
-	if (_reconstructed(i, j, k) < _min_intensity * 0.9)
-	  _reconstructed(i, j, k) = _min_intensity * 0.9;
-	if (_reconstructed(i, j, k) > _max_intensity * 1.1)
-	  _reconstructed(i, j, k) = _max_intensity * 1.1;
-      }
-
-  //Smooth the reconstructed image
-  AdaptiveRegularization(iter, original);
-  //Remove the bias in the reconstructed volume compared to previous iteration
-  if (_global_bias_correction)
-    BiasCorrectVolume(original);
-
-  if(_debugGPU)
-    {
-      char buffer[256];
-      sprintf(buffer, "addonCPU%i.nii", iter - 1);
-      addon.Write(buffer);
-
-      sprintf(buffer, "cmapCPU%i.nii", iter - 1);
-      _confidence_map.Write(buffer);
-    }
+    //Smooth the reconstructed image
+    AdaptiveRegularization(iter, original);
+    //Remove the bias in the reconstructed volume compared to previous iteration
+    if (_global_bias_correction)
+	BiasCorrectVolume(original);
 }
 
 class ParallelMStep{
@@ -3489,40 +3468,40 @@ void irtkReconstruction::MStepGPU(int iter)
 
 void irtkReconstruction::MStep(int iter)
 {
-  if (_debug)
-    cout << "MStep" << endl;
+//  if (_debug)
+    //  cout << "MStep" << endl;
 
-  ParallelMStep parallelMStep(this);
-  parallelMStep();
-  double sigma = parallelMStep.sigma;
-  double mix = parallelMStep.mix;
-  double num = parallelMStep.num;
-  double min = parallelMStep.min;
-  double max = parallelMStep.max;
-  //printf("CPU sigma %f, mix %f, num %f, min_ %f, max_ %f\n", sigma, mix, num, min, max);
-  std::cout.precision(6);
-  std::cout << "CPU sigma " << sigma << " mix " << mix << " num " << num << " min_ " << min << " max_ " << max << std::endl;
-  //Calculate sigma and mix
-  if (mix > 0) {
-    _sigma_cpu = sigma / mix;
-  }
-  else {
-    cerr << "Something went wrong: sigma=" << sigma << " mix=" << mix << endl;
-    exit(1);
-  }
-  if (_sigma_cpu < _step * _step / 6.28)
-    _sigma_cpu = _step * _step / 6.28;
-  if (iter > 1)
-    _mix_cpu = mix / num;
+    ParallelMStep parallelMStep(this);
+    parallelMStep();
+    double sigma = parallelMStep.sigma;
+    double mix = parallelMStep.mix;
+    double num = parallelMStep.num;
+    double min = parallelMStep.min;
+    double max = parallelMStep.max;
+    //printf("CPU sigma %f, mix %f, num %f, min_ %f, max_ %f\n", sigma, mix, num, min, max);
+//    std::cout.precision(6);
+    //  std::cout << "CPU sigma " << sigma << " mix " << mix << " num " << num << " min_ " << min << " max_ " << max << std::endl;
+    //Calculate sigma and mix
+    if (mix > 0) {
+	_sigma_cpu = sigma / mix;
+    }
+    else {
+	cerr << "Something went wrong: sigma=" << sigma << " mix=" << mix << endl;
+	exit(1);
+    }
+    if (_sigma_cpu < _step * _step / 6.28)
+	_sigma_cpu = _step * _step / 6.28;
+    if (iter > 1)
+	_mix_cpu = mix / num;
 
-  //Calculate m
-  _m_cpu = 1 / (max - min);
+    //Calculate m
+    _m_cpu = 1 / (max - min);
 
-  if (_debug || _debugGPU) {
-    cout << "Voxel-wise robust statistics parameters CPU: ";
-    cout << "sigma = " << sqrt(_sigma_cpu) << " mix = " << _mix_cpu << " ";
-    cout << " m = " << _m_cpu << endl;
-  }
+    /*if (_debug || _debugGPU) {
+	cout << "Voxel-wise robust statistics parameters CPU: ";
+	cout << "sigma = " << sqrt(_sigma_cpu) << " mix = " << _mix_cpu << " ";
+	cout << " m = " << _m_cpu << endl;
+	}*/
 
 }
 
@@ -3921,8 +3900,8 @@ void irtkReconstruction::NormaliseBiasGPU(int iter)
 
 void irtkReconstruction::NormaliseBias(int iter)
 {
-  if (_debug)
-    cout << "Normalise Bias ... ";
+//  if (_debug)
+    //   cout << "Normalise Bias ... ";
 
   ParallelNormaliseBias parallelNormaliseBias(this);
   parallelNormaliseBias();
@@ -3931,8 +3910,8 @@ void irtkReconstruction::NormaliseBias(int iter)
   // normalize the volume by proportion of contributing slice voxels for each volume voxel
   bias /= _volume_weights;
 
-  if (_debug)
-    cout << "done." << endl;
+  //if (_debug)
+  //cout << "done." << endl;
 
   MaskImage(bias, 0);
   irtkRealImage m = _mask;
@@ -3945,6 +3924,7 @@ void irtkReconstruction::NormaliseBias(int iter)
   gb.Run();
   bias /= m;
 
+  /*
   if (_debugGPU)
     {
       char buffer_[256];
@@ -3956,7 +3936,7 @@ void irtkReconstruction::NormaliseBias(int iter)
     char buffer[256];
     sprintf(buffer, "averagebias%i.nii.gz", iter);
     bias.Write(buffer);
-  }
+    }*/
 
   irtkRealPixel *pi, *pb;
   pi = _reconstructed.GetPointerToVoxels();
@@ -3967,12 +3947,13 @@ void irtkReconstruction::NormaliseBias(int iter)
     pi++;
     pb++;
   }
+  /*
   if (_debugGPU)
     {
       char buffer[256];
       sprintf(buffer, "nbiasCPU%i.nii", iter);
       bias.Write(buffer);
-    }
+      }*/
 }
 
 /* Set/Get/Save operations */
@@ -4311,106 +4292,89 @@ void irtkReconstruction::PackageToVolume(vector<irtkRealImage>& stacks, vector<i
 {
   irtkImageRigidRegistrationWithPadding rigidregistration;
   irtkGreyImage t, s;
-  //irtkRigidTransformation transformation;
   vector<irtkRealImage> packages;
   char buffer[256];
 
   int firstSlice = 0;
-  cout << "Package to volume: " << endl;
-  for (unsigned int i = 0; i < stacks.size(); i++) {
-    cout << "Stack " << i << ": First slice index is " << firstSlice << endl;
-
-    packages.clear();
-    if (evenodd) {
-      if (half)
-        SplitImageEvenOddHalf(stacks[i], pack_num[i], packages, half_iter);
-      else
-        SplitImageEvenOdd(stacks[i], pack_num[i], packages);
-    }
-    else
-      SplitImage(stacks[i], pack_num[i], packages);
-
-    for (unsigned int j = 0; j < packages.size(); j++) {
-      cout << "Package " << j << " of stack " << i << endl;
-      if (_debug) {
-        sprintf(buffer, "package%i-%i.nii.gz", i, j);
-        packages[j].Write(buffer);
-      }
-
-      t = packages[j];
-      s = _reconstructed;
-
-      //find existing transformation
-      double x, y, z;
-      x = 0; y = 0; z = 0;
-      packages[j].ImageToWorld(x, y, z);
-      stacks[i].WorldToImage(x, y, z);
-
-      int firstSliceIndex = round(z) + firstSlice;
-      cout << "First slice index for package " << j << " of stack " << i << " is " << firstSliceIndex << endl;
-      //transformation = _transformations[sliceIndex];
-
-      //put origin in target to zero
-      irtkRigidTransformation offset;
-      ResetOrigin(t, offset);
-      irtkMatrix mo = offset.GetMatrix();
-      irtkMatrix m = _transformations[firstSliceIndex].GetMatrix();
-      m = m*mo;
-      _transformations[firstSliceIndex].PutMatrix(m);
-
-      rigidregistration.SetInput(&t, &s);
-      rigidregistration.SetOutput(&_transformations[firstSliceIndex]);
-      rigidregistration.GuessParameterSliceToVolume();
-      if (_debug)
+  for (unsigned int i = 0; i < stacks.size(); i++)
+  {
+      packages.clear();
+      if (evenodd)
       {
-	  sprintf(buffer, "par-packages.rreg");
-	  rigidregistration.Write(buffer);
+	  if (half)
+	  {
+	      SplitImageEvenOddHalf(stacks[i], pack_num[i], packages, half_iter);
+	  }
+	  else
+	  {
+	      SplitImageEvenOdd(stacks[i], pack_num[i], packages);
+	  }
       }
-      rigidregistration.Run();
-
-      //undo the offset
-      mo.Invert();
-      m = _transformations[firstSliceIndex].GetMatrix();
-      m = m*mo;
-      _transformations[firstSliceIndex].PutMatrix(m);
-
-      if (_debug) {
-        sprintf(buffer, "transformation%i-%i.dof", i, j);
-        _transformations[firstSliceIndex].irtkTransformation::Write(buffer);
+      else
+      {
+	  SplitImage(stacks[i], pack_num[i], packages);
       }
 
+      for (unsigned int j = 0; j < packages.size(); j++)
+      {
+	  t = packages[j];
+	  s = _reconstructed;
 
-      //set the transformation to all slices of the package
-      cout << "Slices of the package " << j << " of the stack " << i << " are: ";
-      for (int k = 0; k < packages[j].GetZ(); k++) {
-        x = 0; y = 0; z = k;
-        packages[j].ImageToWorld(x, y, z);
-        stacks[i].WorldToImage(x, y, z);
-        int sliceIndex = round(z) + firstSlice;
-        cout << sliceIndex << " " << endl;
+	  //find existing transformation
+	  double x, y, z;
+	  x = 0; y = 0; z = 0;
+	  packages[j].ImageToWorld(x, y, z);
+	  stacks[i].WorldToImage(x, y, z);
 
-        if (sliceIndex >= _transformations.size()) {
-          cerr << "irtkRecnstruction::PackageToVolume: sliceIndex out of range." << endl;
-          cerr << sliceIndex << " " << _transformations.size() << endl;
-          exit(1);
-        }
+	  int firstSliceIndex = round(z) + firstSlice;
+      
+	  //put origin in target to zero
+	  irtkRigidTransformation offset;
+	  ResetOrigin(t, offset);
+	  irtkMatrix mo = offset.GetMatrix();
+	  irtkMatrix m = _transformations[firstSliceIndex].GetMatrix();
+	  m = m*mo;
+	  _transformations[firstSliceIndex].PutMatrix(m);
 
-        if (sliceIndex != firstSliceIndex) {
-          _transformations[sliceIndex].PutTranslationX(_transformations[firstSliceIndex].GetTranslationX());
-          _transformations[sliceIndex].PutTranslationY(_transformations[firstSliceIndex].GetTranslationY());
-          _transformations[sliceIndex].PutTranslationZ(_transformations[firstSliceIndex].GetTranslationZ());
-          _transformations[sliceIndex].PutRotationX(_transformations[firstSliceIndex].GetRotationX());
-          _transformations[sliceIndex].PutRotationY(_transformations[firstSliceIndex].GetRotationY());
-          _transformations[sliceIndex].PutRotationZ(_transformations[firstSliceIndex].GetRotationZ());
-          _transformations[sliceIndex].UpdateMatrix();
-        }
+	  rigidregistration.SetInput(&t, &s);
+	  rigidregistration.SetOutput(&_transformations[firstSliceIndex]);
+	  rigidregistration.GuessParameterSliceToVolume();
+	  rigidregistration.Run();
+
+	  //undo the offset
+	  mo.Invert();
+	  m = _transformations[firstSliceIndex].GetMatrix();
+	  m = m*mo;
+	  _transformations[firstSliceIndex].PutMatrix(m);
+
+	  //set the transformation to all slices of the package
+	  for (int k = 0; k < packages[j].GetZ(); k++)
+	  {
+	      x = 0; y = 0; z = k;
+	      packages[j].ImageToWorld(x, y, z);
+	      stacks[i].WorldToImage(x, y, z);
+	      int sliceIndex = round(z) + firstSlice;
+	  
+	      if (sliceIndex >= _transformations.size())
+	      {
+		  cerr << "irtkRecnstruction::PackageToVolume: sliceIndex out of range." << endl;
+		  cerr << sliceIndex << " " << _transformations.size() << endl;
+		  exit(1);
+	      }
+
+	      if (sliceIndex != firstSliceIndex)
+	      {
+		  _transformations[sliceIndex].PutTranslationX(_transformations[firstSliceIndex].GetTranslationX());
+		  _transformations[sliceIndex].PutTranslationY(_transformations[firstSliceIndex].GetTranslationY());
+		  _transformations[sliceIndex].PutTranslationZ(_transformations[firstSliceIndex].GetTranslationZ());
+		  _transformations[sliceIndex].PutRotationX(_transformations[firstSliceIndex].GetRotationX());
+		  _transformations[sliceIndex].PutRotationY(_transformations[firstSliceIndex].GetRotationY());
+		  _transformations[sliceIndex].PutRotationZ(_transformations[firstSliceIndex].GetRotationZ());
+		  _transformations[sliceIndex].UpdateMatrix();
+	      }
+	  }
       }
-
-
-    }
-    cout << "End of stack " << i << endl << endl;
-
-    firstSlice += stacks[i].GetZ();
+      firstSlice += stacks[i].GetZ();
   }
 }
 

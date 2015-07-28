@@ -628,10 +628,10 @@ int main(int argc, char **argv)
 
   //Repeat volumetric registrations with cropped stacks
   //redirect output to files
-  if (!no_log) {
+/*  if (!no_log) {
     cerr.rdbuf(file_e.rdbuf());
     cout.rdbuf(file.rdbuf());
-  }
+    }*/
 
   if (T1PackageSize == 0 && sfolder.empty())
   {
@@ -652,8 +652,8 @@ int main(int argc, char **argv)
   else
     reconstruction.MatchStackIntensitiesWithMasking(stacks, stack_transformations, averageValue, true);
   average = reconstruction.CreateAverage(stacks, stack_transformations);
-  if (debug)
-    average.Write("average2.nii.gz");
+//  if (debug)
+  //   average.Write("average2.nii.gz");
   //exit(1);
 
   //Create slices and slice-dependent transformations
@@ -721,380 +721,248 @@ int main(int argc, char **argv)
     //only one update
     reconstruction.UpdateGPUTranformationMatrices();
   }
-
+  
+  //Print iteration number on the screen
+  cout.rdbuf(strm_buffer);
+  cerr.rdbuf(strm_buffer_e);
+  
   //interleaved registration-reconstruction iterations
   for (int iter = 0; iter < iterations; iter++)
   {
-    //Print iteration number on the screen
-    if (!no_log) {
-      cout.rdbuf(strm_buffer);
-    }
-    cout << "Iteration " << iter << ". " << endl;
-
-    //perform slice-to-volume registrations - skip the first iteration 
-    if (iter > 0)
-    {
-      if (!no_log) {
-        cerr.rdbuf(file_e.rdbuf());
-        cout.rdbuf(file.rdbuf());
-      }
-      cout << "Iteration " << iter << ": " << endl;
-      cout << "Slice To Volume Registration " << ": " << endl;
-      //if((packages.size()>0)&&(iter<(iterations-1)))
-      if ((packages.size() > 0) && (iter <= iterations*(levels - 1) / levels) && (iter < (iterations - 1)))
+      cout << "Registration Iteration " << iter << ". " << endl;
+      
+      //perform slice-to-volume registrations - skip the first iteration 
+      if (iter > 0)
       {
-        if (iter == 1)
-          reconstruction.PackageToVolume(stacks, packages);
-        else
-        {
-          if (iter == 2)
-            reconstruction.PackageToVolume(stacks, packages, true);
-          else
-          {
-            if (iter == 3)
-              reconstruction.PackageToVolume(stacks, packages, true, true);
-            else
-            {
-              if (iter >= 4)
-                reconstruction.PackageToVolume(stacks, packages, true, true, iter - 2);
-              else
-                printf("unexpected program path");
-              if (useCPUReg)
-              {
-                cout << "Slice To Volume Registration CPU" << ": " << endl;
-                reconstruction.SliceToVolumeRegistration();
-              }
-              else {
-                cout << "Slice To Volume Registration GPU" << ": " << endl;
-                reconstruction.SliceToVolumeRegistrationGPU();
-              }
-              stats.sample("Registration");
-            }
-          }
-        }
+	  cout << "Iteration " << iter << ": " << endl;
+	  //if((packages.size()>0)&&(iter<(iterations-1)))
+	  if ((packages.size() > 0) && (iter <= iterations*(levels - 1) / levels) && (iter < (iterations - 1)))
+	  {
+	      if (iter == 1)
+	      {
+		  reconstruction.PackageToVolume(stacks, packages);
+	      }
+	      else
+	      {
+		  if (iter == 2)
+		  {
+		      reconstruction.PackageToVolume(stacks, packages, true);
+		  }
+		  else
+		  {
+		      if (iter == 3)
+		      {
+			  reconstruction.PackageToVolume(stacks, packages, true, true);
+		      }
+		      else
+		      {
+			  if (iter >= 4)
+			  {
+			      reconstruction.PackageToVolume(stacks, packages, true, true, iter - 2);
+			  }
+			  else
+			  {
+			      printf("unexpected program path");
+			  }
+			  
+			  cout << "Slice To Volume Registration CPU" << ": " << endl;
+			  reconstruction.SliceToVolumeRegistration();
+		      }
+		  }
+	      }
+	  }
+	  else
+	  {
+	      reconstruction.SliceToVolumeRegistration();
+	  }
+	  cout << "Slice To Volume Registration CPU done" << ": " << endl;
+      }
+      
+      cout << "Iteration " << iter << " " << endl;
+
+      //Set smoothing parameters 
+      //amount of smoothing (given by lambda) is decreased with improving alignment
+      //delta (to determine edges) stays constant throughout
+
+      //this causes a drift for very homogenous (phantom) data
+      //reconstruction.SetSmoothingParameters(delta,lastIterLambda);
+      if (iter == (iterations - 1))
+      {
+	  reconstruction.SetSmoothingParameters(delta, lastIterLambda);
       }
       else
-        if (useCPUReg)
-        {
-        printf("Slice To Volume Registration CPU\n");
-        cout << "Slice To Volume Registration CPU" << ": " << endl;
-        reconstruction.SliceToVolumeRegistration();
-        //reconstruction.testCPURegGPU();
-        }
-        else {
-          printf("Slice To Volume Registration GPU\n");
-          cout << "Slice To Volume Registration GPU" << ": " << endl;
-          reconstruction.SliceToVolumeRegistrationGPU();
-        }
-        stats.sample("Registration");
-
-        cout << endl;
-        if (!no_log) {
-          cerr.rdbuf(strm_buffer_e);
-        }
-    }
-
-    //Write to file
-    if (!no_log) {
-      cout.rdbuf(file2.rdbuf());
-    }
-    cout << endl << endl << "Iteration " << iter << ": " << endl << endl;
-
-    //Set smoothing parameters 
-    //amount of smoothing (given by lambda) is decreased with improving alignment
-    //delta (to determine edges) stays constant throughout
-
-    //this causes a drift for very homogenous (phantom) data
-    //reconstruction.SetSmoothingParameters(delta,lastIterLambda);
-    if (iter == (iterations - 1))
-      reconstruction.SetSmoothingParameters(delta, lastIterLambda);
-    else
-    {
-      double l = lambda;
-      for (i = 0; i < levels; i++)
       {
-        if (iter == iterations*(levels - i - 1) / levels)
-          reconstruction.SetSmoothingParameters(delta, l);
-        l *= 2;
+	  double l = lambda;
+	  for (i = 0; i < levels; i++)
+	  {
+	      if (iter == iterations*(levels - i - 1) / levels)
+	      {
+		  reconstruction.SetSmoothingParameters(delta, l);
+	      }
+	      
+	      l *= 2;
+	  }
       }
-    }
 
-    //Use faster reconstruction during iterations and slower for final reconstruction
-    if (iter < (iterations - 1))
-    {
-      reconstruction.SpeedupOn();
-    }
-    else
-    {
-      reconstruction.SpeedupOff();
-    }
-    if (!useCPU)
-    {
-      reconstruction.generatePSFVolume();
-      stats.sample("generatePSFVolume");
-    }
+      cout << "SetSmoothingParameters done" << endl;
+      
+      //Use faster reconstruction during iterations and slower for final reconstruction
+      //_quality_factor = 1 or 2
+      if (iter < (iterations - 1))
+      {
+	  reconstruction.SpeedupOn();
+      }
+      else
+      {
+	  reconstruction.SpeedupOff();
+      }
+      cout << "SpeedupOn done" << endl;
+      
+      /*if (!useCPU)
+      {
+	  reconstruction.generatePSFVolume();
+	  stats.sample("generatePSFVolume");
+	  }*/
 
 
-    //Initialise values of weights, scales and bias fields
-    if (useCPU)
-    {
+      //Initialise values of weights, scales and bias fields
       reconstruction.InitializeEMValues();
-    }
-    else {
-      reconstruction.InitializeEMValuesGPU();
-    }
-    stats.sample("InitializeEMValues");
-
-    //Calculate matrix of transformation between voxels of slices and volume
-    if (useCPU)
-    {
+      cout << "InitializeEMValues done" << endl;
+      
+      //Calculate matrix of transformation between voxels of slices and volume     
       reconstruction.CoeffInit();
-    }
-    else {
-      reconstruction.UpdateGPUTranformationMatrices();
-    }
-    stats.sample("CoeffInit");
-
-    //Initialize reconstructed image with Gaussian weighted reconstruction
-    if (useCPU)
-    {
+      cout << "CoeffInit done" << endl;
+      
+      //Initialize reconstructed image with Gaussian weighted reconstruction      
       reconstruction.GaussianReconstruction();
-      if (debug)
-      {
-        reconstructed = reconstruction.GetReconstructed();
-        sprintf(buffer, "GaussianReconstruction_CPU%i.nii", iter);
-        reconstructed.Write(buffer);
-      }
-    }
-    else {
-      reconstruction.GaussianReconstructionGPU();
-      if (debug || debug_gpu)
-      {
-        reconstructedGPU = reconstruction.GetReconstructedGPU();
-        sprintf(buffer, "GaussianReconstruction_GPU%i.nii", iter);
-        reconstructedGPU.Write(buffer);
-      }
-    }
-    stats.sample("GaussianReconstruction");
-
-    //return EXIT_SUCCESS;
-    //Simulate slices (needs to be done after Gaussian reconstruction)
-    if (useCPU)
-    {
+      cout << "GaussianReconstruction done" << endl;
+      
+      //Simulate slices (needs to be done after Gaussian reconstruction)
       reconstruction.SimulateSlices();
-    }
-    else {
-      reconstruction.SimulateSlicesGPU();
-    }
-    stats.sample("SimulateSlices");
-
-    //Initialize robust statistics parameters
-    if (useCPU)
-    {
+      cout << "SimulateSlices done" << endl;
+      
+      //Initialize robust statistics parameters
       reconstruction.InitializeRobustStatistics();
-    }
-    else {
-      reconstruction.InitializeRobustStatisticsGPU();
-    }
-    stats.sample("InitializeRS");
-
-    //EStep
-    if (useCPU)
-    {
+      cout << "InitializeRobustStatistics done" << endl;
+      
+      //EStep
       reconstruction.EStep();
-    }
-    else {
-      reconstruction.EStepGPU();
-    }
-    stats.sample("EStep");
-    //return EXIT_SUCCESS; 
-
-    //number of reconstruction iterations
-    if (iter == (iterations - 1))
-    {
-      rec_iterations = rec_iterations_last;
-    }
-    else
-      rec_iterations = rec_iterations_first;
-
-    //reconstruction iterations
-    i = 0;
-    for (i = 0; i < rec_iterations; i++)
-    {
-
-      cout << endl << "  Reconstruction iteration " << i << ". " << endl;
-
-      if (intensity_matching)
+      cout << "Estep done" << endl;
+      
+      //number of reconstruction iterations
+      if (iter == (iterations - 1))
       {
-        //calculate bias fields
-        if (useCPU)
-        {
-          if (!disableBiasCorr)
-          {
-            if (sigma > 0)
-              reconstruction.Bias();
-          }
-          //calculate scales
-          reconstruction.Scale();
-        }
-        else {
-          //TODO try out N4 bias correction
-          if (!disableBiasCorr)
-          {
-            if (sigma > 0)
-              reconstruction.BiasGPU();
-          }
-          //calculate scales
-          reconstruction.ScaleGPU();
-        }
-        stats.sample("Bias and Scale");
+	  rec_iterations = rec_iterations_last;
       }
+      else
+	  rec_iterations = rec_iterations_first;
 
-      //MStep and update reconstructed volume
+      /************************************************************************/
+      //reconstruction iterations
+      i = 0;
+      for (i = 0; i < rec_iterations; i++)
+      {
+	  cout << endl << "  Reconstruction iteration " << i << ". " << endl;
+
+	  if (intensity_matching)
+	  {
+	      //calculate bias fields
+	      if (!disableBiasCorr)
+	      {
+		  if (sigma > 0)
+		  {
+		      reconstruction.Bias();
+		      cout << "Bias done" << endl;
+		  }
+	      }
+	      //calculate scales
+	      reconstruction.Scale();
+	      cout << "Scale done" << endl;
+	  }
+
+	  //MStep and update reconstructed volume
+	  reconstruction.Superresolution(i + 1);
+	  cout << "Superresolution done" << endl;
+	  
+	  if (intensity_matching)
+	  {
+	      if (!disableBiasCorr)
+	      {
+		  if ((sigma > 0) && (!global_bias_correction))
+		  {
+		      reconstruction.NormaliseBias(i);
+		      cout << "NormaliseBias done" << endl;
+		  }
+		  
+	      }
+	  }
+	  
+	  // Simulate slices (needs to be done
+	  // after the update of the reconstructed volume)
+	  reconstruction.SimulateSlices();
+	  cout << "SimulateSlices done" << endl;
+	  
+	  //MStep
+	  reconstruction.MStep(i + 1);
+	  cout << "MStep done" << endl;
+	  
+	  //E-step
+	  reconstruction.EStep();
+	  cout << "EStep done" << endl;
+	  
+      }//end of reconstruction iterations
+
+
+
+      /******************************************* END *****************************/
+      
+      //Mask reconstructed image to ROI given by the mask
       if (useCPU)
       {
-        reconstruction.Superresolution(i + 1);
-
-#if 0
-        reconstructed = reconstruction.GetReconstructed();
-        sprintf(buffer, "superCPU%i.nii", i);
-        reconstructed.Write(buffer);
-#endif
-      }
-      else {
-        reconstruction.SuperresolutionGPU(i + 1);
-      }
-      stats.sample("Superresolution");
-
-      //return EXIT_SUCCESS; 
-
-      if (intensity_matching)
-      {
-        if (!disableBiasCorr)
-        {
-
-          if (useCPU)
-          {
-            if ((sigma > 0) && (!global_bias_correction))
-              reconstruction.NormaliseBias(i);
-          }
-          else {
-            if ((sigma > 0) && (!global_bias_correction))
-              reconstruction.NormaliseBiasGPU(i);
-          }
-
-        }
-        stats.sample("NormaliseBias");
-      }
-
-      // Simulate slices (needs to be done
-      // after the update of the reconstructed volume)
-      if (useCPU)
-      {
-        reconstruction.SimulateSlices();
-      }
-      else {
-        reconstruction.SimulateSlicesGPU();
-      }
-      stats.sample("SimulateSlices");
-      if (useCPU)
-      {
-        reconstruction.MStep(i + 1);
-      }
-      else {
-        reconstruction.MStepGPU(i + 1);
-      }
-      stats.sample("MStep");
-      if (useCPU)
-      {
-        //E-step
-        reconstruction.EStep();
-      }
-      else {
-        reconstruction.EStepGPU();
-      }
-      stats.sample("EStep");
-
-      //Save intermediate reconstructed image
-      if (debug || debug_gpu)
-      {
-
-        if (useCPU)
-        {
-          reconstructed = reconstruction.GetReconstructed();
-          sprintf(buffer, "superCPU%i.nii", i);
-          reconstructed.Write(buffer);
-        }
-        else {
-          reconstructedGPU = reconstruction.GetReconstructedGPU();
-          sprintf(buffer, "superGPU%i.nii", i);
-          reconstructedGPU.Write(buffer);
-        }
-      }
-      printf("%d ", i);
-    }//end of reconstruction iterations
-
-    //Mask reconstructed image to ROI given by the mask
-    if (useCPU)
-    {
-      reconstruction.MaskVolume();
-    }
-    else {
-      reconstruction.MaskVolumeGPU();
-
-    }
-    stats.sample("MaskVolume");
-
-    //Save reconstructed image
-    if (useCPU)
-    {
-      reconstructed = reconstruction.GetReconstructed();
-      sprintf(buffer, "image%i_CPU.nii", iter);
-      reconstructed.Write(buffer);
-    }
-    else {
-      reconstruction.SyncCPU();
-      stats.sample("SyncCPU");
-      reconstructed = reconstruction.GetReconstructed();
-      sprintf(buffer, "image%i_GPU.nii", iter);
-      reconstructed.Write(buffer);
-      //get quality gradient
-      /*if (iter > 0)
-      {
-      irtkEvaluation eval(reconstructed, lastReconstructed);
-      EvalResult res = eval.evaluate();
-      std::cout << "PSNR: " << res.psnr << std::endl;
-      ofstream timefile;
-      timefile.open("psnr.txt", ios::out | ios::app);
-      timefile << res.psnr << "\n";
-      timefile.close();
+	  reconstruction.MaskVolume();
       }
       else
       {
-      //compare difference to first recon
-      lastReconstructed = reconstructed;
-      }*/
+	  reconstruction.MaskVolumeGPU();
+	  
+      }
+      stats.sample("MaskVolume");
 
-    }
+      //Save reconstructed image
+      if (useCPU)
+      {
+	  reconstructed = reconstruction.GetReconstructed();
+	  sprintf(buffer, "image%i_CPU.nii", iter);
+	  reconstructed.Write(buffer);
+      }
+      else
+      {
+	  reconstruction.SyncCPU();
+	  stats.sample("SyncCPU");
+	  reconstructed = reconstruction.GetReconstructed();
+	  sprintf(buffer, "image%i_GPU.nii", iter);
+	  reconstructed.Write(buffer);
+      }
+      
+      //Evaluate - write number of included/excluded/outside/zero slices in each iteration in the file
+      if (!no_log) {
+	  cout.rdbuf(fileEv.rdbuf());
+      }
 
-    //Evaluate - write number of included/excluded/outside/zero slices in each iteration in the file
-    if (!no_log) {
-      cout.rdbuf(fileEv.rdbuf());
-    }
-
-    if (useCPU)
-    {
-      reconstruction.Evaluate(iter);
-      cout << endl;
-    }
-    else {
-      reconstruction.EvaluateGPU(iter);
-      cout << endl;
-    }
-    if (!no_log) {
-      cout.rdbuf(strm_buffer);
-    }
-    printf("\n");
+      if (useCPU)
+      {
+	  reconstruction.Evaluate(iter);
+	  cout << endl;
+      }
+      else {
+	  reconstruction.EvaluateGPU(iter);
+	  cout << endl;
+      }
+      
+      if (!no_log) {
+	  cout.rdbuf(strm_buffer);
+      }
+      printf("\n");
   }// end of interleaved registration-reconstruction iterations
 
   //reconstruction.SyncCPU();

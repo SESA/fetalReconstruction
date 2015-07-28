@@ -76,8 +76,8 @@ void irtkPadding(irtkRealImage &image, irtkRealPixel padding, irtkGreyImage *res
     if (n > 0) {
 
         // Print some padding information
-        cout << "Padding value = " << padding << endl;
-        cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
+//        cout << "Padding value = " << padding << endl;
+	//      cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
 
         // Calculate distances
         for (t = 0; t < image.GetT(); t++) {
@@ -128,8 +128,8 @@ void irtkPadding(irtkGreyImage &image, irtkGreyPixel padding)
     if (n > 0) {
 
         // Print some padding information
-        cout << "Padding value = " << padding << endl;
-        cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
+        //cout << "Padding value = " << padding << endl;
+        //cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
 
         // Calculate distances
         for (t = 0; t < image.GetT(); t++) {

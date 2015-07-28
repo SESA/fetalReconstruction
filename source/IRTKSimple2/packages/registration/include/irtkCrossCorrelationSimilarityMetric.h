@@ -162,7 +162,7 @@ inline double irtkCrossCorrelationSimilarityMetric::Evaluate()
   if (_n > 0) {
     return (_xy - (_x * _y) / _n) / (sqrt(_x2 - _x * _x / _n) * sqrt(_y2 - _y *_y / _n));
   } else {
-    cerr << "irtkCrossCorrelationSimilarityMetric::Evaluate: No samples";
+	//    cerr << "irtkCrossCorrelationSimilarityMetric::Evaluate: No samples";
     return 0;
   }
 }

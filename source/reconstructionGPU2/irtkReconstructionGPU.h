@@ -580,11 +580,11 @@ inline void irtkReconstruction::SetLowIntensityCutoff(double cutoff)
 
 inline void irtkReconstruction::SetSmoothingParameters(double delta, double lambda)
 {
-  _delta = delta;
-  _lambda = lambda*delta*delta;
-  _alpha = 0.05 / lambda;
-  if (_alpha > 1) _alpha = 1;
-  cout << "delta = " << _delta << " lambda = " << lambda << " alpha = " << _alpha << endl;
+    _delta = delta;
+    _lambda = lambda*delta*delta;
+    _alpha = 0.05 / lambda;
+    if (_alpha > 1) _alpha = 1;
+    //cout << "delta = " << _delta << " lambda = " << lambda << " alpha = " << _alpha << endl;
 }
 
 inline void irtkReconstruction::SetForceExcludedSlices(vector<int>& force_excluded)
