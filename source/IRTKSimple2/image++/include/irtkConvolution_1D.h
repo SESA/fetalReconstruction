@@ -14,7 +14,7 @@
 
 #define _IRTKCONVOLUTION_1D_H
 
-/**
+/*
  * Class for one-dimensional convolution.
  *
  * This class defines and implements one-dimensional convolutions of an image

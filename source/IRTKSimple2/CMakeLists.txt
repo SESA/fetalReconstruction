@@ -38,7 +38,7 @@ ELSE (USE_VXL)
 
 ENDIF (USE_VXL)
 
-OPTION(BUILD_WITH_TBB "Use TBB library for multithreading support" ON)
+#OPTION(BUILD_WITH_TBB "Use TBB library for multithreading support" ON)
 
 #SUBDIRS(common++/src geometry++/src image++/src contrib++/src applications packages wrapping)
 SUBDIRS(common++/src geometry++/src image++/src contrib++/src packages)

@@ -62,6 +62,7 @@
 #include <stdlib.h>
 #include "utils.h"
 
+#include "EbbImageRigidRegistrationWithPadding.h"
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
@@ -700,7 +701,7 @@ public:
   }
 
   void operator() (const blocked_range<size_t> &r) const {
-    for (size_t i = r.begin(); i != r.end(); ++i) {
+      for (size_t i = r.begin(); i != r.end(); ++i) {
 
       //do not perform registration for template
       if (i == templateNumber)
@@ -814,8 +815,9 @@ void irtkReconstruction::StackRegistrations(vector<irtkRealImage>& stacks,
   irtkRigidTransformation offset;
   ResetOrigin(target, offset);
 
+  //cout << "Calling ParallelStackRegistrations " << endl;
   //register all stacks to the target
-  ParallelStackRegistrations registration(this,
+  /*ParallelStackRegistrations registration(this,
 					  stacks,
 					  stack_transformations,
 					  templateNumber,
@@ -823,8 +825,52 @@ void irtkReconstruction::StackRegistrations(vector<irtkRealImage>& stacks,
 					  offset,
 					  useExternalTarget);
   registration();
+  */
 
+  for (size_t i = 0; i != stacks.size(); ++i)
+  {
+      //do not perform registration for template
+      if (i == templateNumber)
+	  continue;
+
+      //rigid registration object
+      EbbImageRigidRegistrationWithPadding registration;
+      //irtkImageRigidRegistrationWithPadding registration;
+
+      //set target and source (need to be converted to irtkGreyImage)
+      irtkGreyImage source = stacks[i];
+
+      //include offset in trasformation   
+      irtkMatrix mo = offset.GetMatrix();
+      irtkMatrix m = stack_transformations[i].GetMatrix();
+      m = m*mo;
+      stack_transformations[i].PutMatrix(m);
+
+      //perform rigid registration
+      registration.SetInput(&target, &source);
+      registration.SetOutput(&stack_transformations[i]);
+      if (useExternalTarget)
+      {
+	  std::cout << "GuessParameterThickSlicesNMI() not implemented " << std::endl;
+	  exit(0);
+	  //registration.GuessParameterThickSlicesNMI();
+      }
+      else
+      {
+	  registration.GuessParameterThickSlices();
+      }
+      registration.SetTargetPadding(0);
+      registration.Run();
+
+      mo.Invert();
+      m = stack_transformations[i].GetMatrix();
+      m = m*mo;
+      stack_transformations[i].PutMatrix(m);
+  }
+  
   InvertStackTransformations(stack_transformations);
+
+  cout << "StackRegistrations done" << endl;
 }
 
 void irtkReconstruction::RestoreSliceIntensities()

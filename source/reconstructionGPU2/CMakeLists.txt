@@ -122,10 +122,22 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
           irtkReconstructionGPU.h 
           perfstats.h
-          stackMotionEstimator.cpp stackMotionEstimator.h Printer.cc Printer.h )
-
+          stackMotionEstimator.cpp stackMotionEstimator.h Printer.cc Printer.h
+	  EbbCrossCorrelationSimilarityMetric.h
+	  EbbImageRigidRegistrationWithPadding.h
+	  EbbGaussianBlurringWithPadding.cc
+	  EbbResamplingWithPadding.cc
+	  EbbGaussianBlurringWithPadding.h
+	  EbbResamplingWithPadding.h
+	  EbbGradientDescentOptimizer.cc
+	  EbbScalarGaussian.cc
+	  EbbGradientDescentOptimizer.h
+	  EbbScalarGaussian.h
+	  EbbImageRigidRegistrationWithPadding.cc)
+	
 #target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
-target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT})
+#target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT})
+target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT})
 
 if(UNIX)
 target_link_libraries(reconstruction_GPU2 ${Boost_LIBRARIES})

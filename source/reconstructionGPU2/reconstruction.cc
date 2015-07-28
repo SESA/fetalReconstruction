@@ -95,7 +95,7 @@ int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
 
-   auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+  /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
                 "/bm/helloworld.elf32";
 
   ebbrt::Runtime runtime;
@@ -112,7 +112,7 @@ int main(int argc, char **argv)
       ebbrt::node_allocator->AllocateNode(bindir.string());
     });
   }
-  c.Run();
+  c.Run();*/
   
   //utility variables
   int i, ok;
@@ -576,10 +576,16 @@ int main(int argc, char **argv)
   //perform volumetric registration of the stacks
   //redirect output to files
   if (!no_log) {
-    cerr.rdbuf(file_e.rdbuf());
-    cout.rdbuf(file.rdbuf());
+      cerr.rdbuf(file_e.rdbuf());
+      cout.rdbuf(file.rdbuf());
   }
 
+  cout.rdbuf(strm_buffer);
+  cerr.rdbuf(strm_buffer_e);
+    
+  //std::cout << "T1PackageSize " << T1PackageSize << std::endl;
+  //std::cout << "sfolder.empty() " << sfolder.empty() << std::endl;
+  
   if (T1PackageSize == 0 && sfolder.empty())
   {
       std::cout << "StackRegistrations start" << std::endl;
@@ -589,12 +595,12 @@ int main(int argc, char **argv)
 
   //return EXIT_SUCCESS;
 
-  cout << endl;
+  //cout << endl;
   //redirect output back to screen
-  if (!no_log) {
-    cout.rdbuf(strm_buffer);
-    cerr.rdbuf(strm_buffer_e);
-  }
+  //if (!no_log) {
+  //  cout.rdbuf(strm_buffer);
+  //cerr.rdbuf(strm_buffer_e);
+    //}
 
   std::cout << "reconstruction.CreateAverage" << std::endl;
   average = reconstruction.CreateAverage(stacks, stack_transformations);
