@@ -336,7 +336,7 @@ public:
 
   void operator()(const blocked_range<size_t>& r) {
     for (size_t i = r.begin(); i < r.end(); ++i) {
-      irtkImageTransformation imagetransformation;
+	irtkImageTransformation imagetransformation;
       irtkImageFunction *interpolator;
       if (linear)
         interpolator = new irtkLinearInterpolateImageFunction;
@@ -500,14 +500,67 @@ irtkRealImage irtkReconstruction::CreateAverage(vector<irtkRealImage>& stacks,
   }
 
   InvertStackTransformations(stack_transformations);
-  ParallelAverage parallelAverage(this,
+
+  /*ParallelAverage parallelAverage(this,
 				  stacks,
 				  stack_transformations,
 				  -1, 0, 0, // target/source/background
 				  true);
-  parallelAverage();
-  irtkRealImage average = parallelAverage.average;
-  irtkRealImage weights = parallelAverage.weights;
+				  parallelAverage();*/
+
+  
+  //irtkRealImage average = parallelAverage.average;
+  //irtkRealImage weights = parallelAverage.weights;
+  irtkRealImage average;
+  irtkRealImage weights;
+  
+  average.Initialize(this->_reconstructed.GetImageAttributes());
+  average = 0;
+  weights.Initialize(this->_reconstructed.GetImageAttributes());
+  weights = 0;
+  double targetPadding = -1;
+  double sourcePadding = 0;
+  double background = 0;
+  bool linear = true;
+
+  for (size_t i = 0; i < stacks.size(); ++i)
+  {
+      irtkImageTransformation imagetransformation;
+      irtkImageFunction *interpolator;
+      if (linear)
+	  interpolator = new irtkLinearInterpolateImageFunction;
+      else
+	  interpolator = new irtkNearestNeighborInterpolateImageFunction;
+
+      irtkRealImage s = stacks[i];
+      irtkRigidTransformation t = stack_transformations[i];
+      imagetransformation.SetInput(&s, &t);
+      irtkRealImage image(this->_reconstructed.GetImageAttributes());
+      image = 0;
+
+      imagetransformation.SetOutput(&image);
+      imagetransformation.PutTargetPaddingValue(targetPadding);
+      imagetransformation.PutSourcePaddingValue(sourcePadding);
+      imagetransformation.PutInterpolator(interpolator);
+      imagetransformation.Run();
+
+      irtkRealPixel *pa = average.GetPointerToVoxels();
+      irtkRealPixel *pi = image.GetPointerToVoxels();
+      irtkRealPixel *pw = weights.GetPointerToVoxels();
+      for (int p = 0; p < average.GetNumberOfVoxels(); p++)
+      {
+	  if (*pi != background)
+	  {
+	      *pa += *pi;
+	      *pw += 1;
+	  }
+	  pa++;
+	  pi++;
+	  pw++;
+      }
+      delete interpolator;
+  }
+  
   average /= weights;
   InvertStackTransformations(stack_transformations);
   return average;
