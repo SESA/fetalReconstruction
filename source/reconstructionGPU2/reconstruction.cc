@@ -725,7 +725,8 @@ int main(int argc, char **argv)
   //Print iteration number on the screen
   cout.rdbuf(strm_buffer);
   cerr.rdbuf(strm_buffer_e);
-  
+
+  /******************************* START **********************************************************/
   //interleaved registration-reconstruction iterations
   for (int iter = 0; iter < iterations; iter++)
   {
@@ -811,27 +812,29 @@ int main(int argc, char **argv)
       if (iter < (iterations - 1))
       {
 	  reconstruction.SpeedupOn();
+	  rec_iterations = rec_iterations_first;
       }
       else
       {
 	  reconstruction.SpeedupOff();
+
+	  //if iter == (iterations - 1)
+	  rec_iterations = rec_iterations_last;
       }
       cout << "SpeedupOn done" << endl;
-      
-      /*if (!useCPU)
-      {
-	  reconstruction.generatePSFVolume();
-	  stats.sample("generatePSFVolume");
-	  }*/
 
-
+      /***** EVERYTHING HERE IS FOR OVER _SLICES *******/
       //Initialise values of weights, scales and bias fields
-      reconstruction.InitializeEMValues();
-      cout << "InitializeEMValues done" << endl;
+      //reconstruction.InitializeEMValues();
+      //cout << "InitializeEMValues done" << endl;
       
       //Calculate matrix of transformation between voxels of slices and volume     
-      reconstruction.CoeffInit();
-      cout << "CoeffInit done" << endl;
+      //reconstruction.CoeffInit();
+      //cout << "CoeffInit done" << endl;
+      
+      //try to do both 
+      reconstruction.EMCoeff();
+      cout << "EMCoeff done" << endl;
       
       //Initialize reconstructed image with Gaussian weighted reconstruction      
       reconstruction.GaussianReconstruction();
@@ -848,18 +851,10 @@ int main(int argc, char **argv)
       //EStep
       reconstruction.EStep();
       cout << "Estep done" << endl;
+      /*************************parallel for **************************/
       
-      //number of reconstruction iterations
-      if (iter == (iterations - 1))
-      {
-	  rec_iterations = rec_iterations_last;
-      }
-      else
-	  rec_iterations = rec_iterations_first;
-
       /************************************************************************/
       //reconstruction iterations
-      i = 0;
       for (i = 0; i < rec_iterations; i++)
       {
 	  cout << endl << "  Reconstruction iteration " << i << ". " << endl;
@@ -911,60 +906,21 @@ int main(int argc, char **argv)
 	  cout << "EStep done" << endl;
 	  
       }//end of reconstruction iterations
-
-
-
-      /******************************************* END *****************************/
       
       //Mask reconstructed image to ROI given by the mask
-      if (useCPU)
-      {
-	  reconstruction.MaskVolume();
-      }
-      else
-      {
-	  reconstruction.MaskVolumeGPU();
-	  
-      }
-      stats.sample("MaskVolume");
-
+      reconstruction.MaskVolume();
+      
       //Save reconstructed image
-      if (useCPU)
-      {
-	  reconstructed = reconstruction.GetReconstructed();
-	  sprintf(buffer, "image%i_CPU.nii", iter);
-	  reconstructed.Write(buffer);
-      }
-      else
-      {
-	  reconstruction.SyncCPU();
-	  stats.sample("SyncCPU");
-	  reconstructed = reconstruction.GetReconstructed();
-	  sprintf(buffer, "image%i_GPU.nii", iter);
-	  reconstructed.Write(buffer);
-      }
-      
-      //Evaluate - write number of included/excluded/outside/zero slices in each iteration in the file
-      if (!no_log) {
-	  cout.rdbuf(fileEv.rdbuf());
-      }
+      reconstructed = reconstruction.GetReconstructed();
+      sprintf(buffer, "image%i_CPU.nii", iter);
+      reconstructed.Write(buffer);
+      reconstruction.Evaluate(iter);
 
-      if (useCPU)
-      {
-	  reconstruction.Evaluate(iter);
-	  cout << endl;
-      }
-      else {
-	  reconstruction.EvaluateGPU(iter);
-	  cout << endl;
-      }
-      
-      if (!no_log) {
-	  cout.rdbuf(strm_buffer);
-      }
-      printf("\n");
   }// end of interleaved registration-reconstruction iterations
 
+  /******************************************* END *****************************/
+
+  
   //reconstruction.SyncCPU();
   if (useCPU)
   {

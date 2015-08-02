@@ -319,6 +319,9 @@ public:
   void Scale();
   void ScaleGPU();
 
+  //Ebb stuff
+  void EMCoeff();
+  
   ///Calculate slice-dependent bias fields
   void Bias();
   void BiasGPU();
@@ -500,6 +503,9 @@ public:
   friend class ParallelAdaptiveRegularization1;
   friend class ParallelAdaptiveRegularization2;
   friend class ParallelSliceToVolumeRegistrationGPU;
+  friend class ParallelInitializeEMValues;
+  friend class ParallelAverageVolumeWeight;
+  friend class ParallelEMCoeff;
 };
 
 inline double irtkReconstruction::G(double x, double s)
