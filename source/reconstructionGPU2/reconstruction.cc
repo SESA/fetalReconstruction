@@ -825,22 +825,27 @@ int main(int argc, char **argv)
 
       /***** EVERYTHING HERE IS FOR OVER _SLICES *******/
       //Initialise values of weights, scales and bias fields
-      //reconstruction.InitializeEMValues();
-      //cout << "InitializeEMValues done" << endl;
+      /*reconstruction.InitializeEMValues();
+      cout << "InitializeEMValues done" << endl;
       
       //Calculate matrix of transformation between voxels of slices and volume     
-      //reconstruction.CoeffInit();
-      //cout << "CoeffInit done" << endl;
+      reconstruction.CoeffInit();
+      cout << "CoeffInit done" << endl;*/
       
       //try to do both 
       reconstruction.EMCoeff();
       cout << "EMCoeff done" << endl;
-      
+
+      //HAN - can't merge the two functions since EMCoeff updates _reconstructed while GaussianReconstruction sets it to 0 for some reason
       //Initialize reconstructed image with Gaussian weighted reconstruction      
       reconstruction.GaussianReconstruction();
       cout << "GaussianReconstruction done" << endl;
-      
+
+      //HAN - can't merge the two functions since GaussianReconstruction updates _reconstructed /= _volume_weights first and simulateslices needs it to update sigma
       //Simulate slices (needs to be done after Gaussian reconstruction)
+      //reconstruction.SimulateSlicesRobustStatistics();
+      //cout << "SimulateSlicesRobustStatistics done" << endl;
+
       reconstruction.SimulateSlices();
       cout << "SimulateSlices done" << endl;
       

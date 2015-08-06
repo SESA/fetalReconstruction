@@ -192,6 +192,7 @@ protected:
   //slices identify as too small to be used
   vector<int> _small_slices;
 
+  vector<int> _voxel_num;
   /// use adaptive or non-adaptive regularisation (default:false)
   bool _adaptive;
 
@@ -321,6 +322,7 @@ public:
 
   //Ebb stuff
   void EMCoeff();
+  void GaussianSlices();
   
   ///Calculate slice-dependent bias fields
   void Bias();
@@ -430,7 +432,8 @@ public:
   void SimulateStacks(vector<irtkRealImage>& stacks);
 
   void SimulateSlices();
-
+  void SimulateSlicesRobustStatistics();
+  
   ///Puts origin of the image into origin of world coordinates
   static void ResetOrigin(irtkGreyImage &image,
     irtkRigidTransformation& transformation);
@@ -506,6 +509,9 @@ public:
   friend class ParallelInitializeEMValues;
   friend class ParallelAverageVolumeWeight;
   friend class ParallelEMCoeff;
+  friend class ParallelGaussianSlices;
+  friend class ParallelGaussianReconstruction;
+  friend class ParallelSimulateSlicesRobustStatistics;
 };
 
 inline double irtkReconstruction::G(double x, double s)
