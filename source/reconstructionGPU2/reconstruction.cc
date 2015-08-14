@@ -96,23 +96,23 @@ int main(int argc, char **argv)
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
 
   /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
-                "/bm/helloworld.elf32";
+    "/bm/helloworld.elf32";
 
-  ebbrt::Runtime runtime;
-  ebbrt::Context c(runtime);
-  boost::asio::signal_set sig(c.io_service_, SIGINT);
-  {
+    ebbrt::Runtime runtime;
+    ebbrt::Context c(runtime);
+    boost::asio::signal_set sig(c.io_service_, SIGINT);
+    {
     ebbrt::ContextActivation activation(c);
-
+    
     // ensure clean quit on ctrl-c
     sig.async_wait([&c](const boost::system::error_code& ec,
-                        int signal_number) { c.io_service_.stop(); });
+    int signal_number) { c.io_service_.stop(); });
     Printer::Init().Then([bindir](ebbrt::Future<void> f) {
-      f.Get();
-      ebbrt::node_allocator->AllocateNode(bindir.string());
+    f.Get();
+    ebbrt::node_allocator->AllocateNode(bindir.string());
     });
-  }
-  c.Run();*/
+    }
+    c.Run();*/
   
   //utility variables
   int i, ok;
@@ -238,49 +238,49 @@ int main(int argc, char **argv)
 
     try
     {
-      po::store(po::parse_command_line(argc, argv, desc), vm); // can throw 
+	po::store(po::parse_command_line(argc, argv, desc), vm); // can throw 
+	
+	if (vm.count("help"))
+	{
+	    std::cout << "Application to perform reconstruction of volumetric MRI from thick slices." << std::endl
+		      << desc << std::endl;
+	    return EXIT_SUCCESS;
+	}
 
-      if (vm.count("help"))
-      {
-        std::cout << "Application to perform reconstruction of volumetric MRI from thick slices." << std::endl
-          << desc << std::endl;
-        return EXIT_SUCCESS;
-      }
-
-      po::notify(vm);
+	po::notify(vm);
     }
     catch (po::error& e)
     {
-      std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
-      std::cerr << desc << std::endl;
-      return EXIT_FAILURE;
+	std::cerr << "ERROR: " << e.what() << std::endl << std::endl;
+	std::cerr << desc << std::endl;
+	return EXIT_FAILURE;
     }
   }
   catch (std::exception& e)
   {
-    std::cerr << "Unhandled exception while parsing arguments:  "
-      << e.what() << ", application will now exit" << std::endl;
-    return EXIT_FAILURE;
+      std::cerr << "Unhandled exception while parsing arguments:  "
+		<< e.what() << ", application will now exit" << std::endl;
+      return EXIT_FAILURE;
   }
 
   
   if (useCPU)
   {
-    //security measure for wrong input params
-    useCPUReg = true;
-    useGPUReg = false;
+      //security measure for wrong input params
+      useCPUReg = true;
+      useGPUReg = false;
 
-    //set CPU  threads
-    if(numThreads > 0)
-    {
-	cout << "PREV tbb_no_threads = " << tbb_no_threads << endl;
-	tbb_no_threads = numThreads;
-	cout << "NEW tbb_no_threads = " << tbb_no_threads << endl;
-    }
-    else
-    {
-	cout << "Using task_scheduler_init::automatic number of threads" << endl;
-    }
+      //set CPU  threads
+      if(numThreads > 0)
+      {
+	  cout << "PREV tbb_no_threads = " << tbb_no_threads << endl;
+	  tbb_no_threads = numThreads;
+	  cout << "NEW tbb_no_threads = " << tbb_no_threads << endl;
+      }
+      else
+      {
+	  cout << "Using task_scheduler_init::automatic number of threads" << endl;
+      }
   }
   else
   {
@@ -296,43 +296,44 @@ int main(int argc, char **argv)
   irtkRealImage referenceVolume;
   if (!referenceVolumeName.empty())
   {
-    referenceVolume.Read(referenceVolumeName.c_str());
-    cout << "using " << referenceVolumeName << " as initial reference volueme for " << outputName << endl;
+      referenceVolume.Read(referenceVolumeName.c_str());
+      cout << "using " << referenceVolumeName << " as initial reference volueme for " << outputName << endl;
   }
-
-
+  
   float tmp_motionestimate = FLT_MAX;
   for (i = 0; i < nStacks; i++)
   {
-    stack.Read(inputStacks[i].c_str());
-    cout << "Reading stack ... " << inputStacks[i] << endl;
-    stacks.push_back(stack);
+      stack.Read(inputStacks[i].c_str());
+      cout << "Reading stack ... " << inputStacks[i] << endl;
+      stacks.push_back(stack);
   }
 
+  // initializes a irtkRigidTransformation for each stack in the input data
+  // sets the template to be the first stack if one isn't given
   for (i = 0; i < nStacks; i++)
   {
-    irtkTransformation *transformation;
-    if (!inputTransformations.empty())
-    {
-      try
+      irtkTransformation *transformation;
+      if (!inputTransformations.empty())
       {
-        transformation = irtkTransformation::New((char*)(inputTransformations[i].c_str()));
+	  try
+	  {
+	      transformation = irtkTransformation::New((char*)(inputTransformations[i].c_str()));
+	  }
+	  catch (...)
+	  {
+	      transformation = new irtkRigidTransformation;
+	      if (templateNumber < 0) templateNumber = 0;
+	  }
       }
-      catch (...)
+      else
       {
-        transformation = new irtkRigidTransformation;
-        if (templateNumber < 0) templateNumber = 0;
+	  transformation = new irtkRigidTransformation;
+	  if (templateNumber < 0) templateNumber = 0;
       }
-    }
-    else
-    {
-      transformation = new irtkRigidTransformation;
-      if (templateNumber < 0) templateNumber = 0;
-    }
 
-    irtkRigidTransformation *rigidTransf = dynamic_cast<irtkRigidTransformation*> (transformation);
-    stack_transformations.push_back(*rigidTransf);
-    delete rigidTransf;
+      irtkRigidTransformation *rigidTransf = dynamic_cast<irtkRigidTransformation*> (transformation);
+      stack_transformations.push_back(*rigidTransf);
+      delete rigidTransf;
   }
 
   //Create reconstruction object
@@ -341,48 +342,49 @@ int main(int argc, char **argv)
 
   if (useSINCPSF)
   {
-    reconstruction.useSINCPSF();
+      reconstruction.useSINCPSF();
   }
-
+  
   reconstruction.Set_debugGPU(debug_gpu);
 
+  //not sure why need to invert, might need to read paper
   reconstruction.InvertStackTransformations(stack_transformations);
-
+  
   if (!maskName.empty())
   {
-    mask = new irtkRealImage((char*)(maskName.c_str()));
+      mask = new irtkRealImage((char*)(maskName.c_str()));
   }
-
+  
   if (num_input_stacks_tuner > 0)
   {
-    nStacks = num_input_stacks_tuner;
-    cout << "actually used stacks for tuner test .... " << num_input_stacks_tuner << endl;
+      nStacks = num_input_stacks_tuner;
+      cout << "actually used stacks for tuner test .... " << num_input_stacks_tuner << endl;
   }
-
+  
   number_of_force_excluded_slices = force_excluded.size();
 
   //erase stacks for tuner evaluation
   if (num_input_stacks_tuner > 0)
   {
-    stacks.erase(stacks.begin() + num_input_stacks_tuner, stacks.end());
-    stack_transformations.erase(stack_transformations.begin() + num_input_stacks_tuner, stack_transformations.end());
-    std::cout << "stack sizes: " << nStacks << " " << stacks.size() << " " << thickness.size() << " " << stack_transformations.size() << std::endl;
+      stacks.erase(stacks.begin() + num_input_stacks_tuner, stacks.end());
+      stack_transformations.erase(stack_transformations.begin() + num_input_stacks_tuner, stack_transformations.end());
+      std::cout << "stack sizes: " << nStacks << " " << stacks.size() << " " << thickness.size() << " " << stack_transformations.size() << std::endl;
   }
-
+  
   //Initialise 2*slice thickness if not given by user
   if (thickness.size() == 0)
   {
-    cout << "Slice thickness is ";
-    for (i = 0; i < nStacks; i++)
-    {
-      double dx, dy, dz;
-      stacks[i].GetPixelSize(&dx, &dy, &dz);
-      thickness.push_back(dz * 2);
-      cout << thickness[i] << " ";
-    }
-    cout << "." << endl;
+      cout << "Slice thickness is ";
+      for (i = 0; i < nStacks; i++)
+      {
+	  double dx, dy, dz;
+	  stacks[i].GetPixelSize(&dx, &dy, &dz);
+	  thickness.push_back(dz * 2);
+	  cout << thickness[i] << " ";
+      }
+      cout << "." << endl;
   }
-
+  
   //Output volume
   irtkRealImage reconstructed;
   irtkRealImage lastReconstructed;
@@ -399,14 +401,14 @@ int main(int argc, char **argv)
 
   //Set low intensity cutoff for bias estimation
   reconstruction.SetLowIntensityCutoff(low_intensity_cutoff);
-
-
+  
   // Check whether the template stack can be indentified
   if (templateNumber < 0)
   {
     cerr << "Please identify the template by assigning id transformation." << endl;
     exit(1);
   }
+  
   //If no mask was given  try to create mask from the template image in case it was padded
   if ((mask == NULL) && (sfolder.empty()))
   {
@@ -418,117 +420,118 @@ int main(int argc, char **argv)
   std::vector<irtkRealImage> tmpStacks;
   for (i = 0; i < stacks.size(); i++)
   {
-    tmpStacks.push_back(stacks[i]);
+      tmpStacks.push_back(stacks[i]);
   }
-
+  
   PerfStats stats;
   stats.start();
 
+  //doesn't get used for now
   if (T1PackageSize > 0)
   {
-    cout << "using " << referenceVolumeName << " as T2 reference reconstruction and going to register T1 packages to it." << endl;
-    cout << "T1 Package Size is " << T1PackageSize << std::endl;
+      cout << "using " << referenceVolumeName << " as T2 reference reconstruction and going to register T1 packages to it." << endl;
+      cout << "T1 Package Size is " << T1PackageSize << std::endl;
 
-    std::vector<irtkRealImage> stackPackages;
-    for (int i = 0; i < stacks.size(); i++)
-    {
-      reconstruction.SplitImage(stacks[i], T1PackageSize, stackPackages);
-    }
+      std::vector<irtkRealImage> stackPackages;
+      for (int i = 0; i < stacks.size(); i++)
+      {
+	  reconstruction.SplitImage(stacks[i], T1PackageSize, stackPackages);
+      }
 
 
-    std::cout << "got " << stackPackages.size() << " package-stacks" << std::endl;
+      std::cout << "got " << stackPackages.size() << " package-stacks" << std::endl;
 
-    std::vector<irtkRigidTransformation> stackPackages_transformations;
+      std::vector<irtkRigidTransformation> stackPackages_transformations;
 
-    for (i = 0; i < stackPackages.size(); i++)
-    {
-      irtkTransformation *transformation;
-      transformation = new irtkRigidTransformation;
+      for (i = 0; i < stackPackages.size(); i++)
+      {
+	  irtkTransformation *transformation;
+	  transformation = new irtkRigidTransformation;
 
-      irtkRigidTransformation *rigidTransf = dynamic_cast<irtkRigidTransformation*> (transformation);
-      stackPackages_transformations.push_back(*rigidTransf);
-      delete rigidTransf;
-    }
+	  irtkRigidTransformation *rigidTransf = dynamic_cast<irtkRigidTransformation*> (transformation);
+	  stackPackages_transformations.push_back(*rigidTransf);
+	  delete rigidTransf;
+      }
 
-    reconstruction.externalRegistrationTargetImage = referenceVolume;
-    reconstruction.InvertStackTransformations(stackPackages_transformations);
+      reconstruction.externalRegistrationTargetImage = referenceVolume;
+      reconstruction.InvertStackTransformations(stackPackages_transformations);
 
-    if (mask != NULL)
-    {
-      irtkRealImage m = *mask;
-      reconstruction.TransformMask(stackPackages[templateNumber], m, stackPackages_transformations[templateNumber]);
-      reconstruction.CropImage(stackPackages[templateNumber], m);
-    }
+      if (mask != NULL)
+      {
+	  irtkRealImage m = *mask;
+	  reconstruction.TransformMask(stackPackages[templateNumber], m, stackPackages_transformations[templateNumber]);
+	  reconstruction.CropImage(stackPackages[templateNumber], m);
+      }
 
-    if (debug)
-      stackPackages[20].Write("testPackage.nii.gz");
+      if (debug)
+	  stackPackages[20].Write("testPackage.nii.gz");
 
-    //hack
-    stacks = stackPackages;
-    stack_transformations = stackPackages_transformations;
-    nStacks = stackPackages.size();
+      //hack
+      stacks = stackPackages;
+      stack_transformations = stackPackages_transformations;
+      nStacks = stackPackages.size();
 
-    vector<double > package_slicethickness;
+      vector<double > package_slicethickness;
 
-    cout << "Slice thickness is ";
-    for (i = 0; i < nStacks; i++)
-    {
-      double dx, dy, dz;
-      stackPackages[i].GetPixelSize(&dx, &dy, &dz);
-      package_slicethickness.push_back(2.0 * 2);  //(dz*2);
-      cout << package_slicethickness[i] << " ";
-    }
-    cout << "." << endl;
+      cout << "Slice thickness is ";
+      for (i = 0; i < nStacks; i++)
+      {
+	  double dx, dy, dz;
+	  stackPackages[i].GetPixelSize(&dx, &dy, &dz);
+	  package_slicethickness.push_back(2.0 * 2);  //(dz*2);
+	  cout << package_slicethickness[i] << " ";
+      }
+      cout << "." << endl;
 
-    thickness = package_slicethickness;
+      thickness = package_slicethickness;
   }
 
   //Before creating the template we will crop template stack according to the given mask
   if (mask != NULL)
   {
-    //first resample the mask to the space of the stack
-    //for template stact the transformation is identity
-    irtkRealImage m = *mask;
-
+      //first resample the mask to the space of the stack
+      //for template stact the transformation is identity
+      irtkRealImage m = *mask;
+      
 #if HAVE_CULA
-    if(useAutoTemplate)
-    {
-      //TODO would be better to do this for the masked stacks...
+      if(useAutoTemplate)
       {
-        stackMotionEstimator mestimate;
-        for(i = 0; i < stacks.size(); i++)
-        {
-          reconstruction.TransformMask(tmpStacks[i],m,stack_transformations[i]);
-          //Crop template stack
-          reconstruction.CropImage(tmpStacks[i],m);
-          //now define template with motion estimation...
+	  //TODO would be better to do this for the masked stacks...
+	  {
+	      stackMotionEstimator mestimate;
+	      for(i = 0; i < stacks.size(); i++)
+	      {
+		  reconstruction.TransformMask(tmpStacks[i],m,stack_transformations[i]);
+		  //Crop template stack
+		  reconstruction.CropImage(tmpStacks[i],m);
+		  //now define template with motion estimation...
 
-          float motionestimate = mestimate.evaluateStackMotion(&tmpStacks[i]);
-          std::cout << "estimated motion: " << motionestimate << std::endl;
-          stackMotion.push_back(motionestimate);
-          if(motionestimate < tmp_motionestimate)
-          {
-            templateNumber = i;
-            tmp_motionestimate = motionestimate;
-          }
-        }
+		  float motionestimate = mestimate.evaluateStackMotion(&tmpStacks[i]);
+		  std::cout << "estimated motion: " << motionestimate << std::endl;
+		  stackMotion.push_back(motionestimate);
+		  if(motionestimate < tmp_motionestimate)
+		  {
+		      templateNumber = i;
+		      tmp_motionestimate = motionestimate;
+		  }
+	      }
+	  }
+	  stats.sample("motion measurement");
+	  std::cout << "Determined stack " << templateNumber << " as template. " << std::endl;
       }
-      stats.sample("motion measurement");
-      std::cout << "Determined stack " << templateNumber << " as template. " << std::endl;
-  }
 #endif
 
-    //now do it really with best stack
-    reconstruction.TransformMask(stacks[templateNumber], m, stack_transformations[templateNumber]);
-    //Crop template stack
-    reconstruction.CropImage(stacks[templateNumber], m);
+      //now do it really with best stack
+      reconstruction.TransformMask(stacks[templateNumber], m, stack_transformations[templateNumber]);
+      //Crop template stack
+      reconstruction.CropImage(stacks[templateNumber], m);
 
-    if (debug)
-    {
-      m.Write("maskTemplate.nii.gz");
-      stacks[templateNumber].Write("croppedTemplate.nii.gz");
-    }
-}
+      if (debug)
+      {
+	  m.Write("maskTemplate.nii.gz");
+	  stacks[templateNumber].Write("croppedTemplate.nii.gz");
+      }
+  }
 
   tmpStacks.erase(tmpStacks.begin(), tmpStacks.end());
 
@@ -542,11 +545,14 @@ int main(int argc, char **argv)
       temp.z = stacks[i].GetZ();
       stack_sizes.push_back(temp);
       //stack_sizes.push_back(make_uint3(stacks[i].GetX(), stacks[i].GetY(), stacks[i].GetZ()));
-    //	std::cout << stack_sizes[i].x << " " << stack_sizes[i].y << " " << stack_sizes[i].z << " " << std::endl;
+      //	std::cout << stack_sizes[i].x << " " << stack_sizes[i].y << " " << stack_sizes[i].z << " " << std::endl;
   }
 
+  /************************************** !! *************************************/
+  //I believe this initializes _reconstructed with its number of slices
   //Create template volume with isotropic resolution 
   //if resolution==0 it will be determined from in-plane resolution of the image
+  //resolution is from input parameter --resolution, which is 2.0 for test cases
   resolution = reconstruction.CreateTemplate(stacks[templateNumber], resolution);
 
   //Set mask to reconstruction object. 
