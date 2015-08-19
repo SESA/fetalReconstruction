@@ -63,14 +63,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/filesystem.hpp>
 
-#include <ebbrt/Context.h>
+/*#include <ebbrt/Context.h>
 #include <ebbrt/ContextActivation.h>
 #include <ebbrt/GlobalIdMap.h>
 #include <ebbrt/StaticIds.h>
 #include <ebbrt/NodeAllocator.h>
 #include <ebbrt/Runtime.h>
 
-#include "Printer.h"
+#include "Printer.h"*/
 #include "utils.h"
 
 namespace po = boost::program_options;
@@ -94,8 +94,9 @@ const std::string currentDateTime() {
 int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
-
-   auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+  pt::ptime start = pt::microsec_clock::local_time();
+  
+/*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
                 "/bm/helloworld.elf32";
 
   ebbrt::Runtime runtime;
@@ -113,7 +114,7 @@ int main(int argc, char **argv)
     });
   }
   c.Run();
-  
+*/
   //utility variables
   int i, ok;
   char buffer[256];
@@ -685,7 +686,7 @@ int main(int argc, char **argv)
     reconstruction.ReadTransformation((char*)tfolder.c_str());
 
   stats.sample("overhead/setup");
-  pt::ptime tick = pt::microsec_clock::local_time();
+  
 
 
   if (!useCPU)
@@ -1118,7 +1119,7 @@ int main(int argc, char **argv)
   }
 
   pt::ptime now = pt::microsec_clock::local_time();
-  pt::time_duration diff = now - tick;
+  pt::time_duration diff = now - start;
   double mss = diff.total_milliseconds() / 1000.0;
 
   if (useCPU)

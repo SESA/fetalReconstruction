@@ -72,8 +72,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/image++/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/packages/transformation/include
 	${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/packages/registration/include
-	${EBBRT_SRCDIR}/hosted/src/include
-	${EBBRT_SRCDIR}/common/src/include
+	#${EBBRT_SRCDIR}/hosted/src/include
+	#${EBBRT_SRCDIR}/common/src/include
 	${CMAKE_CURRENT_SOURCE_DIR}
 	)
 
@@ -122,10 +122,10 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
           irtkReconstructionGPU.h 
           perfstats.h
-          stackMotionEstimator.cpp stackMotionEstimator.h Printer.cc Printer.h )
+          stackMotionEstimator.cpp stackMotionEstimator.h) #Printer.cc Printer.h )
 
 #target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
-target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT})
+target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES}) #${EbbRT})
 
 if(UNIX)
 target_link_libraries(reconstruction_GPU2 ${Boost_LIBRARIES})
