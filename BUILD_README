@@ -1,0 +1,12 @@
+#dependencies
+FLTK version 1.1.10
+VTK 5 or 6
+Boost, no earlier than version 1.48
+GNU Scientific Library
+CMAKE
+
+cd source
+mkdir build; cd build;
+cmake -DCMAKE_C_COMPILER=gcc-4.8 -DCMAKE_CXX_COMPILER=g++-4.8
+-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=OFF -DBUILD_TESTING=OFF
+-DBUILD_WITH_TBB=OFF -DEBBRT_SRCDIR=$HOME/work/EbbRT ..  
