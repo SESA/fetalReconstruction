@@ -720,7 +720,8 @@ template <class HistogramType> double irtkHistogram_2D<HistogramType>::Kappa()
 template <> void irtkHistogram_2D<double>::Smooth()
 {
   int i, j, k;
-  double **tmp, value;
+  double **tmp = NULL;
+  double value;
 
   if (_nsamp == 0) {
     cerr << "irtkHistogram_2D<HistogramType>::Smooth: No samples in Histogram" << endl;

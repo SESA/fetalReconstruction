@@ -15,6 +15,7 @@
 #define _IRTKIMAGETOFILE_H
 
 #include <irtkFileToImage.h>
+#include <irtkCofstream.h>
 
 /**
  * Abstract base class for any general image to file filter.

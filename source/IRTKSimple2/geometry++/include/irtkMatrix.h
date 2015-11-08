@@ -28,6 +28,14 @@ See LICENSE for details
 
 #include <iostream>
 #include <cmath>
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 /**
 
@@ -39,7 +47,7 @@ class irtkMatrix : public irtkObject
 {
 
 protected:
-
+  
   /// Number of rows
   int _rows;
 
@@ -48,6 +56,29 @@ protected:
 
   /// Data
   double **_matrix;
+
+  /// Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+      int i, j;
+      ar & _rows & _cols;
+
+      //need to allocate memory
+      if (_matrix == NULL)
+      {
+	  _matrix = Allocate(_matrix, _rows, _cols);
+      }
+
+      for (i = 0; i < _rows; i++) 
+      {
+	  for (j = 0; j < _cols; j++) 
+	  {
+	      ar & _matrix[i][j];
+	  }
+      }
+  }
 
 public:
 

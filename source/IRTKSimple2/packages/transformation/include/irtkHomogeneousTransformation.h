@@ -15,6 +15,15 @@
 #define _HOMOGENEOUSTRANSFORMATION_H
 
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 typedef enum {TX, TY, TZ, RX, RY, RZ, SX, SY, SZ, SXY, SYZ, SXZ, SYX, SZY, SZX}
     irtkHomogeneousTransformationParameterIndex;
 
@@ -38,6 +47,12 @@ protected:
   /// 4 x 4 transformation matrix for homogeneous coordinates
   irtkMatrix _matrix;
 
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+      ar & _matrix;
+  }
 public:
 
   /// Constructor (default)

@@ -718,5 +718,19 @@ double irtkShapeBasedInterpolateImageFunction::Evaluate(double x, double y, doub
   }
 }
 
+void irtkShapeBasedInterpolateImageFunction::Refine()
+{
+    return;
+}
+
+double irtkShapeBasedInterpolateImageFunction::EvaluateLinear(double x, double y, double z, double t)
+{
+    return 0.0;
+}
+
+double irtkShapeBasedInterpolateImageFunction::EvaluateInsideLinear(double x, double y, double z, double t)
+{
+    return 0.0;
+}
 #endif
 

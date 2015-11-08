@@ -61,8 +61,24 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <signal.h>
 
+<<<<<<< Updated upstream
 #include <boost/filesystem.hpp>
 
+=======
+//#include <boost/filesystem.hpp>
+
+<<<<<<< HEAD
+//#include <ebbrt/Context.h>
+//#include <ebbrt/ContextActivation.h>
+//#include <ebbrt/GlobalIdMap.h>
+//#include <ebbrt/StaticIds.h>
+//#include <ebbrt/NodeAllocator.h>
+//#include <ebbrt/Runtime.h>
+
+//#include "Printer.h"
+#include <utils.h>
+=======
+>>>>>>> Stashed changes
 /*#include <ebbrt/Context.h>
 #include <ebbrt/ContextActivation.h>
 #include <ebbrt/GlobalIdMap.h>
@@ -72,6 +88,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Printer.h"*/
 #include "utils.h"
+>>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
 
 namespace po = boost::program_options;
 
@@ -94,9 +111,22 @@ const std::string currentDateTime() {
 int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
+<<<<<<< Updated upstream
   pt::ptime start = pt::microsec_clock::local_time();
   
 /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+=======
+<<<<<<< HEAD
+
+
+
+  /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+=======
+  pt::ptime start = pt::microsec_clock::local_time();
+  
+/*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
+>>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
+>>>>>>> Stashed changes
                 "/bm/helloworld.elf32";
 
   ebbrt::Runtime runtime;
@@ -556,7 +586,7 @@ int main(int argc, char **argv)
   //to redirect output from screen to text files
 
   //to remember cout and cerr buffer
-  streambuf* strm_buffer = cout.rdbuf();
+/*  streambuf* strm_buffer = cout.rdbuf();
   streambuf* strm_buffer_e = cerr.rdbuf();
   //files for registration output
   string name;
@@ -573,29 +603,31 @@ int main(int argc, char **argv)
   //set precision
   cout << setprecision(3);
   cerr << setprecision(3);
-
+*/
   //perform volumetric registration of the stacks
   //redirect output to files
-  if (!no_log) {
-    cerr.rdbuf(file_e.rdbuf());
-    cout.rdbuf(file.rdbuf());
-  }
+  //if (!no_log) {
+  //  cerr.rdbuf(file_e.rdbuf());
+  //  cout.rdbuf(file.rdbuf());
+  // }
 
   if (T1PackageSize == 0 && sfolder.empty())
   {
       std::cout << "StackRegistrations start" << std::endl;
+      
       //volumetric registration
       reconstruction.StackRegistrations(stacks, stack_transformations, templateNumber);
+     
   }
 
   //return EXIT_SUCCESS;
 
   cout << endl;
   //redirect output back to screen
-  if (!no_log) {
-    cout.rdbuf(strm_buffer);
-    cerr.rdbuf(strm_buffer_e);
-  }
+  //if (!no_log) {
+  //  cout.rdbuf(strm_buffer);
+  //  cerr.rdbuf(strm_buffer_e);
+  //}
 
   std::cout << "reconstruction.CreateAverage" << std::endl;
   average = reconstruction.CreateAverage(stacks, stack_transformations);
@@ -623,10 +655,10 @@ int main(int argc, char **argv)
 
   //Repeat volumetric registrations with cropped stacks
   //redirect output to files
-  if (!no_log) {
-    cerr.rdbuf(file_e.rdbuf());
-    cout.rdbuf(file.rdbuf());
-  }
+  //if (!no_log) {
+  //  cerr.rdbuf(file_e.rdbuf());
+  // cout.rdbuf(file.rdbuf());
+  //}
 
   if (T1PackageSize == 0 && sfolder.empty())
   {
@@ -636,10 +668,10 @@ int main(int argc, char **argv)
   }
 
   //redirect output back to screen
-  if (!no_log) {
+  /*if (!no_log) {
     cout.rdbuf(strm_buffer);
     cerr.rdbuf(strm_buffer_e);
-  }
+    }*/
 
   //Rescale intensities of the stacks to have the same average
   if (intensity_matching)
@@ -721,18 +753,18 @@ int main(int argc, char **argv)
   for (int iter = 0; iter < iterations; iter++)
   {
     //Print iteration number on the screen
-    if (!no_log) {
-      cout.rdbuf(strm_buffer);
-    }
+      //  if (!no_log) {
+//      cout.rdbuf(strm_buffer);
+      //}
     cout << "Iteration " << iter << ". " << endl;
 
     //perform slice-to-volume registrations - skip the first iteration 
     if (iter > 0)
     {
-      if (!no_log) {
-        cerr.rdbuf(file_e.rdbuf());
-        cout.rdbuf(file.rdbuf());
-      }
+	//if (!no_log) {
+        //cerr.rdbuf(file_e.rdbuf());
+        //cout.rdbuf(file.rdbuf());
+	//}
       cout << "Iteration " << iter << ": " << endl;
       cout << "Slice To Volume Registration " << ": " << endl;
       //if((packages.size()>0)&&(iter<(iterations-1)))
@@ -784,15 +816,15 @@ int main(int argc, char **argv)
         stats.sample("Registration");
 
         cout << endl;
-        if (!no_log) {
-          cerr.rdbuf(strm_buffer_e);
-        }
+//        if (!no_log) {
+	//        cerr.rdbuf(strm_buffer_e);
+        //}
     }
 
     //Write to file
-    if (!no_log) {
-      cout.rdbuf(file2.rdbuf());
-    }
+//    if (!no_log) {
+    //    cout.rdbuf(file2.rdbuf());
+    //}
     cout << endl << endl << "Iteration " << iter << ": " << endl << endl;
 
     //Set smoothing parameters 
@@ -1073,9 +1105,9 @@ int main(int argc, char **argv)
     }
 
     //Evaluate - write number of included/excluded/outside/zero slices in each iteration in the file
-    if (!no_log) {
-      cout.rdbuf(fileEv.rdbuf());
-    }
+//    if (!no_log) {
+    //    cout.rdbuf(fileEv.rdbuf());
+    //}
 
     if (useCPU)
     {
@@ -1086,9 +1118,9 @@ int main(int argc, char **argv)
       reconstruction.EvaluateGPU(iter);
       cout << endl;
     }
-    if (!no_log) {
-      cout.rdbuf(strm_buffer);
-    }
+//    if (!no_log) {
+    //    cout.rdbuf(strm_buffer);
+    //}
     printf("\n");
   }// end of interleaved registration-reconstruction iterations
 

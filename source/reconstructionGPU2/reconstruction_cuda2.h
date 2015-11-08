@@ -259,7 +259,7 @@ struct Reconstruction {
   void UpdateReconstructed(const uint3 vsize, float* data); //temporary for CPU GPU sync
   void UpdateReconstructedOnX(const uint3 vsize, float* data, int dev);
   void SyncConfidenceMapAddon(float* cmdata, float* addondata);
-  void UpdateScaleVector(std::vector<float> scales, std::vector<float> slices_weights);//{h_scales = scales; /*thrust::copy(scales.begin(), scales.end(), scale_.begin());};
+  void UpdateScaleVector(std::vector<float> scales, std::vector<float> slices_weights);//{h_scales = scales; thrust::copy(scales.begin(), scales.end(), scale_.begin());};
   void UpdateScaleVectorOnX(std::vector<float>& scales, std::vector<float>& slices_weights, int dev, bool alloc);
   void CalculateScaleVector(std::vector<float>& scale_vec);
   void CalculateScaleVectorOnX(std::vector<float>& scale_vec, int dev);

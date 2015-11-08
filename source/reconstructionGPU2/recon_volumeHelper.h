@@ -58,6 +58,13 @@ struct POINT3D
   short y;
   short z;
   float value;
+
+  template <typename Archive>
+  void serialize(Archive& ar, const unsigned int version)
+  {
+	ar & x & y & z & value;
+  }  
+
 };
 
 typedef std::vector<POINT3D> VOXELCOEFFS;

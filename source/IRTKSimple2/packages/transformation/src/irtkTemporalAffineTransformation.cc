@@ -685,7 +685,7 @@ int irtkTemporalAffineTransformation::CheckHeader(char *name)
 
 void irtkTemporalAffineTransformation::Print()
 {
-  int nDOF = this->NumberOfDOFs()/_Nt;
+/*  int nDOF = this->NumberOfDOFs()/_Nt;
 
   cout.setf(ios::right);
   cout.setf(ios::fixed);
@@ -710,7 +710,7 @@ void irtkTemporalAffineTransformation::Print()
 
   cout.precision(6);
   cout.unsetf(ios::right);
-  cout.unsetf(ios::fixed);
+  cout.unsetf(ios::fixed);*/
 }
 
 bool irtkTemporalAffineTransformation::IsIdentity()

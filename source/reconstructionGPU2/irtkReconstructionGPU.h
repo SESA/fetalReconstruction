@@ -62,45 +62,55 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using namespace std;
 
 
-
+/*
 //Reconstruction of volume from 2D slices
+struct POINT3D
+{
+  short x;
+  short y;
+  short z;
+  float value;
+  
+  template <typename Archive>
+  void serialize(Archive& ar, const unsigned int version)
+  {
+	ar & x & y & z & value;
+  }  
+};
 
+typedef std::vector<POINT3D> VOXELCOEFFS;
+typedef std::vector<std::vector<VOXELCOEFFS> > SLICECOEFFS;*/
 
 class irtkReconstruction : public irtkObject
 {
 
 protected:
-
-  //Structures to store the matrix of transformation between volume and slices
-  std::vector<SLICECOEFFS> _volcoeffs;
+    
 
   //SLICES
   /// Slices
-  vector<irtkRealImage> _slices;
   vector<irtkRealImage> _simulated_slices;
   vector<irtkRealImage> _simulated_weights;
   vector<irtkRealImage> _simulated_inside;
 
   vector<irtkRealImage> _slices_resampled;
 
-  vector<double> _slices_regCertainty;
   //std::vector<Matrix4> _transf;
 
   /// Transformations
-  vector<irtkRigidTransformation> _transformations;
+
   vector<irtkRigidTransformation> _transformations_gpu;
   /// Indicator whether slice has an overlap with volumetric mask
-  vector<bool> _slice_inside_cpu;
+
   vector<bool> _slice_inside_gpu;
 
   //VOLUME
   /// Reconstructed volume
   irtkGenericImage<float> _reconstructed_gpu;
-  irtkRealImage _reconstructed;
+
   /// Flag to say whether the template volume has been created
   bool _template_created;
-  /// Volume mask
-  irtkRealImage _mask;
+
 
   /// Flag to say whether we have a mask
   bool _have_mask;
@@ -154,8 +164,6 @@ protected:
   vector<double> _scale_cpu;
   vector<float> _scale_gpu;
 
-  ///Quality factor - higher means slower and better
-  double _quality_factor;
 
   //use sinc like function or not
   bool _use_SINC;
@@ -214,7 +222,22 @@ protected:
   bool _useCPU;
   bool _debugGPU;
 
+
 public:
+
+  //Structures to store the matrix of transformation between volume and slices
+  std::vector<SLICECOEFFS> _volcoeffs;
+  vector<irtkRealImage> _slices;
+  irtkRealImage _reconstructed;
+  vector<irtkRigidTransformation> _transformations;
+  vector<double> _slices_regCertainty;
+  vector<bool> _slice_inside_cpu;
+  
+  /// Volume mask
+  irtkRealImage _mask;
+
+  ///Quality factor - higher means slower and better
+  double _quality_factor;
 
   ///Constructor
   irtkReconstruction(std::vector<int> dev, bool useCPUReg, bool useCPU = false);

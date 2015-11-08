@@ -75,6 +75,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	#${EBBRT_SRCDIR}/hosted/src/include
 	#${EBBRT_SRCDIR}/common/src/include
 	${CMAKE_CURRENT_SOURCE_DIR}
+        /home/handong/github/EbbRT-irtk-serialize/src
+	/home/handong/github/EbbRT-irtk-serialize/hosted/src
 	)
 
 #if(UNIX)
@@ -89,18 +91,21 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 
 #need to check if Unix is sane
 # add boost dependencies
-if(UNIX)
-find_package( Boost 1.46 REQUIRED COMPONENTS program_options filesystem system thread)
+# if(UNIX)
+# find_package( Boost 1.46 REQUIRED COMPONENTS program_options filesystem system thread)
+# add_definitions(-DUSE_BOOST=1)
+# else(UNIX)
+# find_package( Boost 1.46 REQUIRED COMPONENTS program_options thread)
+# add_definitions(-DBOOST_NO_CXX11_ALLOCATOR)
+# if(MSVC11)
+# add_definitions(-DUSE_BOOST=0)
+# else(MSVC11)
+# add_definitions(-DUSE_BOOST=1)
+# endif(MSVC11)
+# endif(UNIX)
+
+find_package( Boost 1.53.0 REQUIRED COMPONENTS program_options filesystem system thread coroutine serialization)
 add_definitions(-DUSE_BOOST=1)
-else(UNIX)
-find_package( Boost 1.46 REQUIRED COMPONENTS program_options thread)
-add_definitions(-DBOOST_NO_CXX11_ALLOCATOR)
-if(MSVC11)
-add_definitions(-DUSE_BOOST=0)
-else(MSVC11)
-add_definitions(-DUSE_BOOST=1)
-endif(MSVC11)
-endif(UNIX)
 
 if ( NOT Boost_FOUND )
 message( STATUS "Boost could not be found." )
@@ -122,10 +127,29 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
           irtkReconstructionGPU.h 
           perfstats.h
+<<<<<<< Updated upstream
+=======
+<<<<<<< HEAD
+          stackMotionEstimator.cpp stackMotionEstimator.h
+	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTSliceToVolumeRegistration.cc
+	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTCoeffInit.cc
+	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTStackRegistrations.o
+	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTSliceToVolumeRegistration.o
+	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTCoeffInit.o
+          )
+
+#target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
+target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT} ${Boost_LIBRARIES})
+=======
+>>>>>>> Stashed changes
           stackMotionEstimator.cpp stackMotionEstimator.h) #Printer.cc Printer.h )
 
 #target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
 target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES}) #${EbbRT})
+<<<<<<< Updated upstream
+=======
+>>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
+>>>>>>> Stashed changes
 
 if(UNIX)
 target_link_libraries(reconstruction_GPU2 ${Boost_LIBRARIES})

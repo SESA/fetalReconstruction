@@ -56,6 +56,16 @@ public:
   /// Direction of z-axis
   double _zaxis[3];
 
+  /// Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+      ar & _x & _y & _z & _t & _dx & _dy & _dz & _dt & _xorigin & _yorigin & _zorigin
+	  & _torigin & _xaxis[0] & _xaxis[1] & _xaxis[2] & _yaxis[0] & _yaxis[1] & _yaxis[2]
+	  & _zaxis[0] & _zaxis[1] & _zaxis[2];
+  }
+
   /// Constructor
   irtkImageAttributes();
 

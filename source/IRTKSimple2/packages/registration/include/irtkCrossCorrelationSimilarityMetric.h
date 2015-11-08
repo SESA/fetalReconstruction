@@ -116,7 +116,7 @@ inline void irtkCrossCorrelationSimilarityMetric::Combine(irtkSimilarityMetric *
   irtkCrossCorrelationSimilarityMetric *m = dynamic_cast<irtkCrossCorrelationSimilarityMetric *>(metric);
 
   if (m == NULL) {
-    cerr << "irtkCrossCorrelationSimilarityMetric::Combine: Dynamic cast failed" << endl;
+//    cerr << "irtkCrossCorrelationSimilarityMetric::Combine: Dynamic cast failed" << endl;
     exit(1);
   }
 
@@ -145,7 +145,7 @@ inline void irtkCrossCorrelationSimilarityMetric::ResetAndCopy(irtkSimilarityMet
   irtkCrossCorrelationSimilarityMetric *m = dynamic_cast<irtkCrossCorrelationSimilarityMetric *>(metric);
 
   if (m == NULL) {
-    cerr << "irtkCrossCorrelationSimilarityMetric::ResetAndCopy: Dynamic cast failed" << endl;
+//    cerr << "irtkCrossCorrelationSimilarityMetric::ResetAndCopy: Dynamic cast failed" << endl;
     exit(1);
   }
 
@@ -161,10 +161,10 @@ inline double irtkCrossCorrelationSimilarityMetric::Evaluate()
 {
   if (_n > 0) {
     return (_xy - (_x * _y) / _n) / (sqrt(_x2 - _x * _x / _n) * sqrt(_y2 - _y *_y / _n));
-  } else {
-    cerr << "irtkCrossCorrelationSimilarityMetric::Evaluate: No samples";
-    return 0;
-  }
+  } //else {
+    	//cerr << "irtkCrossCorrelationSimilarityMetric::Evaluate: No samples";
+  return 0;
+  //}
 }
 
 #endif

@@ -954,9 +954,9 @@ ostream& operator<< (ostream& os, const irtkMatrix &m)
     }
   }
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)data, (char *)data, m._rows*m._cols);
-#endif
+//#ifndef WORDS_BIGENDIAN
+//  swap64((char *)data, (char *)data, m._rows*m._cols);
+//#endif
 
   // Write binary data
   os.write((char *)data, m._rows*m._cols*sizeof(double));
@@ -998,9 +998,9 @@ istream& operator>> (istream& is, irtkMatrix &m)
   // Read binary data
   is.read((char *)data, m._rows*m._cols*sizeof(double));
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)data, (char *)data, m._rows*m._cols);
-#endif
+//#ifndef WORDS_BIGENDIAN
+//  swap64((char *)data, (char *)data, m._rows*m._cols);
+//#endif
 
   // Convert data
   index = 0;

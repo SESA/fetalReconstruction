@@ -1,3 +1,10 @@
+#set(CMAKE_SHARED_LIBRARY_LINK_C_FLAGS "")
+#set(CMAKE_SHARED_LIBRARY_LINK_CXX_FLAGS "")
+
+#set(CMAKE_SYSTEM_NAME Generic)
+#set(CMAKE_SYSTEM_PROCESSOR x86_64-pc-ebbrt)
+#set(CMAKE_CROSSCOMPILING 1)
+
 cmake_minimum_required(VERSION 2.8)
 if(COMMAND cmake_policy)
   # policy settings ...
@@ -17,16 +24,19 @@ IF (GSL_FOUND)
 ENDIF (GSL_FOUND)
 
 # add boost dependencies
-find_package( Boost 1.46 REQUIRED)
+#find_package( Boost 1.53.0 REQUIRED system serialization)
+find_package( Boost 1.53.0 REQUIRED COMPONENTS program_options filesystem system thread coroutine serialization)
+add_definitions(-DUSE_BOOST=1)
 
 if ( NOT Boost_FOUND )
 message( STATUS "Boost could not be found." )
    set( BOOST_ROOT ${BOOST_ROOT} CACHE PATH "Please enter path to Boost include folder." FORCE )
 endif ()
 
-#message( STATUS "Boost_INCLUDE_DIRS : '" ${Boost_INCLUDE_DIRS} "'" )
+message( STATUS "Boost_INCLUDE_DIRS : '" ${Boost_INCLUDE_DIRS} "'" )
 
 include_directories(${Boost_INCLUDE_DIRS})
+link_directories(${Boost_LIBRARY_DIRS})
 
 OPTION(USE_VXL "Use VXL library instead of Numerical Recipes" OFF)
 IF (USE_VXL)

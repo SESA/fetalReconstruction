@@ -166,15 +166,15 @@ void irtkPointSet::BoundingBox(irtkPoint &p1, irtkPoint &p2) const
 
 ostream& operator<< (ostream& os, const irtkPointSet &pset)
 {
-  int i;
+//  int i;
 
   os << "irtkPointSet " << pset._n << endl;
   os.setf(ios::right);
   os.setf(ios::fixed);
   os.precision(10);
-  for (i = 0; i < pset._n; i++) {
-    os << setw(15) << pset._data[i] << endl;
-  }
+  //for (i = 0; i < pset._n; i++) {
+      //os << setw(15) << pset._data[i] << endl;
+  //}
   os.precision(6);
   os.unsetf(ios::right);
   os.unsetf(ios::fixed);
@@ -199,7 +199,7 @@ istream& operator>> (istream& is, irtkPointSet &pset)
 
   // Read irtkPointSet
   for (i = 0; i < size; i++) {
-    is >> p;
+      //is >> p;
     pset.Add(p);
   }
   return is;

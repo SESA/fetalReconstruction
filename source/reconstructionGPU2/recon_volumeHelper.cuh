@@ -53,13 +53,20 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <helper_functions.h>
 
 
-struct POINT3D
+/*struct POINT3D
 {
   short x;
   short y;
   short z;
   float value;
-};
+  
+  template <typename Archive>
+  void serialize(Archive& ar, const unsigned int version)
+  {
+	ar & x & y & z & value;
+  }  
+
+};*/
 
 //would be nice to have a proper CUDA Matrix class blas?
 struct Matrix4 {
@@ -169,8 +176,8 @@ inline __host__ __device__ Matrix4 operator*(const Matrix4 & A, const Matrix4 & 
 }
 
 
-typedef std::vector<POINT3D> VOXELCOEFFS;
-typedef std::vector<std::vector<VOXELCOEFFS> > SLICECOEFFS;
+//typedef std::vector<POINT3D> VOXELCOEFFS;
+//typedef std::vector<std::vector<VOXELCOEFFS> > SLICECOEFFS;
 
 struct Ref {
   Ref(void * d = NULL) : data(d) {}
