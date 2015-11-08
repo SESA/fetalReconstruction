@@ -2,17 +2,7 @@ project(FetalReconstruction)
 
 cmake_policy(SET CMP0010 OLD)
 
-<<<<<<< Updated upstream
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-=======
-<<<<<<< HEAD
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /home/handong/github/EbbRT/hosted/cmake/Modules ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-#/home/handong/github/EbbRT/hosted/cmake/Modules)
-=======
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
->>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
->>>>>>> Stashed changes
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/lib)
@@ -80,13 +70,6 @@ IF (TBB_FOUND)
 ENDIF (TBB_FOUND)
 #message("ignore the support TBB error. it works. Do not ignore the not found error!")
 
-#add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/MathFunctions)
-#set(EBBRT_LIBRARIES ${EBBRT_LIBRARIES} MathFunctions)
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
-#SET(CMAKE_MODULE_PATH "/home/handong/github/EbbRT/hosted/cmake/Modules")
-
 list(APPEND CMAKE_CXX_FLAGS
   "-std=c++0x ${CMAKE_CXX_FLAGS}")
 
@@ -133,59 +116,6 @@ add_library(EbbRT
   /home/handong/github/EbbRT/hosted/src/Runtime.cc
   /home/handong/github/EbbRT/hosted/src/Console.cc
 )
-=======
->>>>>>> Stashed changes
-#SET(CMAKE_MODULE_PATH "${EBBRT_SRCDIR}/hosted/cmake/Modules")
-
-# list(APPEND CMAKE_CXX_FLAGS
-#      "-std=c++0x ${CMAKE_CXX_FLAGS}")
-
-# find_package(Boost 1.53.0 REQUIRED COMPONENTS filesystem system)
-# include_directories(${Boost_INCLUDE_DIRS})
-
-# find_package(TBB REQUIRED)
-# include_directories(${TBB_INCLUDE_DIRS})
-
-# find_package(Capnp REQUIRED)
-# include_directories(${CAPNP_INCLUDE_DIRS})
-
-# find_package(Fdt REQUIRED)
-# include_directories(${FDT_INCLUDE_DIRS})
-
-# file(GLOB CapnpFiles "${EBBRT_SRCDIR}/common/src/*.capnp")
-# CAPNP_GENERATE_CPP(CapnpSources CapnpHeaders ${CapnpFiles})
-
-# include_directories(${EBBRT_SRCDIR}/hosted/src/include)
-# include_directories(${EBBRT_SRCDIR}/common/src/include)
-# include_directories(${CMAKE_BINARY_DIR})
-
-# add_library(EbbRT 
-#   ${CapnpSources}
-#   ${EBBRT_SRCDIR}/common/src/CapnpMessage.cc
-#   ${EBBRT_SRCDIR}/common/src/EbbAllocator.cc
-#   ${EBBRT_SRCDIR}/common/src/Fdt.cc
-#   ${EBBRT_SRCDIR}/common/src/IOBuf.cc
-#   ${EBBRT_SRCDIR}/common/src/IOBufRef.cc
-#   ${EBBRT_SRCDIR}/common/src/Message.cc
-#   ${EBBRT_SRCDIR}/common/src/UniqueIOBuf.cc
-#   ${EBBRT_SRCDIR}/common/src/StaticIOBuf.cc
-#   ${EBBRT_SRCDIR}/common/src/SharedIOBufRef.cc
-#   ${EBBRT_SRCDIR}/hosted/src/Clock.cc
-#   ${EBBRT_SRCDIR}/hosted/src/ContextActivation.cc
-#   ${EBBRT_SRCDIR}/hosted/src/Context.cc
-#   ${EBBRT_SRCDIR}/hosted/src/EventManager.cc
-#   ${EBBRT_SRCDIR}/hosted/src/GlobalIdMap.cc
-#   ${EBBRT_SRCDIR}/hosted/src/LocalEntry.cc
-#   ${EBBRT_SRCDIR}/hosted/src/LocalIdMap.cc
-#   ${EBBRT_SRCDIR}/hosted/src/Messenger.cc
-#   ${EBBRT_SRCDIR}/hosted/src/NodeAllocator.cc
-#   ${EBBRT_SRCDIR}/hosted/src/Runtime.cc
-#   ${EBBRT_SRCDIR}/hosted/src/Console.cc
-# )
-<<<<<<< Updated upstream
-=======
->>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
->>>>>>> Stashed changes
 
 if(USE_SYSTEM_IRTK)
 FIND_PACKAGE(OpenCV REQUIRED)
@@ -195,17 +125,9 @@ find_package(VTK REQUIRED)
 include(${VTK_USE_FILE})
 else(USE_SYSTEM_IRTK)
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/IRTKSimple2/)
-<<<<<<< Updated upstream
-set(IRTK_LIBRARIES common++ contrib++ geometry++ image++ registration++ transformation++ zlib)
-#EbbRT boost_coroutine boost_context boost_filesystem boost_system capnp kj fdt tbb pthread)
-=======
-<<<<<<< HEAD
+
 set(IRTK_LIBRARIES common++ contrib++ geometry++ image++ registration++ transformation++ zlib EbbRT capnp kj fdt pthread)
-=======
-set(IRTK_LIBRARIES common++ contrib++ geometry++ image++ registration++ transformation++ zlib)
-#EbbRT boost_coroutine boost_context boost_filesystem boost_system capnp kj fdt tbb pthread)
->>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
->>>>>>> Stashed changes
+
 endif(USE_SYSTEM_IRTK)
 
 INCLUDE_DIRECTORIES(${TBB_INSTALL_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})

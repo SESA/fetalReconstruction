@@ -127,9 +127,6 @@ link_directories(${Boost_LIBRARY_DIRS})
 add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
           irtkReconstructionGPU.h 
           perfstats.h
-<<<<<<< Updated upstream
-=======
-<<<<<<< HEAD
           stackMotionEstimator.cpp stackMotionEstimator.h
 	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTSliceToVolumeRegistration.cc
 	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTCoeffInit.cc
@@ -140,16 +137,6 @@ add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc
 
 #target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
 target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} ${EbbRT} ${Boost_LIBRARIES})
-=======
->>>>>>> Stashed changes
-          stackMotionEstimator.cpp stackMotionEstimator.h) #Printer.cc Printer.h )
-
-#target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)
-target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES}) #${EbbRT})
-<<<<<<< Updated upstream
-=======
->>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
->>>>>>> Stashed changes
 
 if(UNIX)
 target_link_libraries(reconstruction_GPU2 ${Boost_LIBRARIES})

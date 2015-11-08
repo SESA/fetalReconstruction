@@ -61,13 +61,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <signal.h>
 
-<<<<<<< Updated upstream
 #include <boost/filesystem.hpp>
 
-=======
-//#include <boost/filesystem.hpp>
-
-<<<<<<< HEAD
 //#include <ebbrt/Context.h>
 //#include <ebbrt/ContextActivation.h>
 //#include <ebbrt/GlobalIdMap.h>
@@ -77,8 +72,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 //#include "Printer.h"
 #include <utils.h>
-=======
->>>>>>> Stashed changes
 /*#include <ebbrt/Context.h>
 #include <ebbrt/ContextActivation.h>
 #include <ebbrt/GlobalIdMap.h>
@@ -88,7 +81,6 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include "Printer.h"*/
 #include "utils.h"
->>>>>>> 94adc3fdaecf6df965ca3aee85332db438da6f72
 
 namespace po = boost::program_options;
 
@@ -111,7 +103,6 @@ const std::string currentDateTime() {
 int main(int argc, char **argv)
 {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
-<<<<<<< Updated upstream
   pt::ptime start = pt::microsec_clock::local_time();
   
 /*auto bindir = boost::filesystem::system_complete(argv[0]).parent_path() /
