@@ -27,15 +27,15 @@ endif()
 # mark_as_advanced(FORCE CUDA_SDK_ROOT_DIR)
 # additional directories where to look for SDK which are
 # not yet added in FindCUDA.cmake of CMake
-#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "$ENV{CUDA_SDK_INCLUDE_DIR}") 
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "$ENV{CUDA_SDK_INCLUDE_DIR}")
 #list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-5.5-sdk/NVIDIA_CUDA-5.5_Samples/")
 #list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.0-sdk/NVIDIA_CUDA-6.0_Samples/")
 #list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/opt/cuda-6.0/samples")
 #list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "/usr/local/cuda-6.5/samples")
 #if(WIN32)
-#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "[HKEY_LOCAL_MACHINE\\SOFTWARE\\NVIDIA Corporation\\Installed Products\\NVIDIA SDK 10\\Compute;InstallDir]") 
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "[HKEY_LOCAL_MACHINE\\SOFTWARE\\NVIDIA Corporation\\Installed Products\\NVIDIA SDK 10\\Compute;InstallDir]")
 #endif()
-#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "C:/ProgramData/NVIDIA Corporation/CUDA Samples/v5.5/") 
+#list(APPEND INTERNAL_CUDA_SDK_SEARCH_PATH "C:/ProgramData/NVIDIA Corporation/CUDA Samples/v5.5/")
 
 #find_path(CUDA_HELPER_INCLUDE_DIR
 #  helper_cuda.h
@@ -50,8 +50,8 @@ endif()
 #  set(CUDA_SDK_ROOT_DIR ${CUDA_HELPER_INCLUDE_DIR})
  # message("CUDA_SDK_ROOT_DIR: ${CUDA_SDK_ROOT_DIR}")
 #else(CUDA_HELPER_INCLUDE_DIR)
-#   message("CUDA_SDK_ROOT_DIR: really not found")	
-#endif(CUDA_HELPER_INCLUDE_DIR) 
+#   message("CUDA_SDK_ROOT_DIR: really not found")
+#endif(CUDA_HELPER_INCLUDE_DIR)
 #include_directories(${CUDA_SDK_ROOT_DIR}/common/inc)
 
 #if( ${CUDA_VERSION} VERSION_LESS "5")
@@ -75,8 +75,8 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 	#${EBBRT_SRCDIR}/hosted/src/include
 	#${EBBRT_SRCDIR}/common/src/include
 	${CMAKE_CURRENT_SOURCE_DIR}
-        /home/handong/github/EbbRT-irtk-serialize/src
-	/home/handong/github/EbbRT-irtk-serialize/hosted/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../ext/irtk-serialize/src
+        ${CMAKE_CURRENT_SOURCE_DIR}/../../ext/irtk-serialize/hosted/src
 	)
 
 #if(UNIX)
@@ -115,24 +115,20 @@ include_directories(${Boost_INCLUDE_DIRS})
 link_directories(${Boost_LIBRARY_DIRS})
 
 #cuda_include_directories(${CMAKE_CURRENT_SOURCE_DIR}/GPUGauss)
-#cuda_add_library(reconstruction_cuda_lib2 
-#				reconstruction_cuda2.cu 
-#				reconstruction_cuda2.cuh 
-#				recon_volumeHelper.cuh 
-#				GPUGauss/gaussfilter.cu 
+#cuda_add_library(reconstruction_cuda_lib2
+#				reconstruction_cuda2.cu
+#				reconstruction_cuda2.cuh
+#				recon_volumeHelper.cuh
+#				GPUGauss/gaussfilter.cu
 #				GPUGauss/gaussFilterConvolution.cuh
 #				GPUWorker.cpp
 #				GPUWorker.h)
 
-add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc 
-          irtkReconstructionGPU.h 
+add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc
+          irtkReconstructionGPU.h
           perfstats.h
           stackMotionEstimator.cpp stackMotionEstimator.h
-	  #/home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTSliceToVolumeRegistration.cc
-	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTCoeffInit.cc
-	  #/home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTStackRegistrations.o
-	  #/home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTSliceToVolumeRegistration.o
-	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTCoeffInit.o
+	  ${CMAKE_CURRENT_SOURCE_DIR}/../../ext/irtk-serialize/hosted/src/EbbRTCoeffInit.cc
           )
 
 #target_link_libraries(reconstruction_GPU2 ${IRTK_LIBRARIES} ${TBB_LIBRARIES} ${GSL_LIBRARIES} reconstruction_cuda_lib2)

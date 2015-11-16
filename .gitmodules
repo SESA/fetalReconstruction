@@ -1,0 +1,3 @@
+[submodule "ext/irtk-serialize"]
+	path = ext/irtk-serialize
+	url = https://github.com/SESA/EbbRT-irtk-serialize.git

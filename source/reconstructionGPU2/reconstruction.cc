@@ -98,8 +98,9 @@ const std::string currentDateTime() {
 
 void func1(char **argv) {
 
-  string bindir = "/home/handong/github/EbbRT-irtk-serialize/hosted/build/"
-                  "Release/bm/AppMain.elf32";
+  auto bindir =
+      boost::filesystem::system_complete(argv[0]).parent_path() /
+      "/../../ext/irtk-serialize/hosted/build/Release/bm/AppMain.elf32";
 
   static ebbrt::Runtime runtime;
   static ebbrt::Context c(runtime);
@@ -119,7 +120,7 @@ void func1(char **argv) {
           for (int i = 0; i < numNodes; i++) {
 	      //std::cout << bindir.string() << std::endl;
             ebbrt::NodeAllocator::NodeDescriptor nd =
-                ebbrt::node_allocator->AllocateNode(bindir, 1, 1, 16);
+                ebbrt::node_allocator->AllocateNode(bindir.string(), 1, 1, 16);
 
             nd.NetworkId().Then([ref](
                 ebbrt::Future<ebbrt::Messenger::NetworkId> f) {
@@ -128,11 +129,11 @@ void func1(char **argv) {
               ref->addNid(nid);
             });
           }
-	  
+
 	  std::cout << "Waiting for input ... " << std::endl;
 	  char c;
 	  std::cin >> c;
-	  
+
 
           // waiting for all nodes to be initialized
           ref->waitNodes().Then([ref](ebbrt::Future<void> f) {
@@ -153,10 +154,10 @@ void func1(char **argv) {
 int main(int argc, char **argv) {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
   pt::ptime start = pt::microsec_clock::local_time();
-  
+
   func1(argv);
   func1(argv);
-  
+
   // utility variables
   int i, ok;
   char buffer[256];

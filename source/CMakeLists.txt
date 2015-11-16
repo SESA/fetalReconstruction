@@ -2,7 +2,7 @@ project(FetalReconstruction)
 
 cmake_policy(SET CMP0010 OLD)
 
-set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} /home/handong/github/EbbRT/hosted/cmake/Modules ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} $ENV{EBBRT_SRCDIR}/hosted/cmake/Modules ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/lib)
@@ -85,37 +85,37 @@ include_directories(${CAPNP_INCLUDE_DIRS})
 find_package(Fdt REQUIRED)
 include_directories(${FDT_INCLUDE_DIRS})
 
-file(GLOB CapnpFiles "/home/handong/github/EbbRT/common/src/*.capnp")
+file(GLOB CapnpFiles "$ENV{EBBRT_SRCDIR}/common/src/*.capnp")
 CAPNP_GENERATE_CPP(CapnpSources CapnpHeaders ${CapnpFiles})
 
-include_directories(/home/handong/github/EbbRT/hosted/src/include)
-include_directories(/home/handong/github/EbbRT/common/src/include)
-include_directories(/home/handong/github/EbbRT-irtk-serialize/src)
-include_directories(/home/handong/github/EbbRT-irtk-serialize/hosted/src)
+include_directories($ENV{EBBRT_SRCDIR}/hosted/src/include)
+include_directories($ENV{EBBRT_SRCDIR}/common/src/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../irtk-serialize/src)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../irtk-serialize/hosted/src)
 include_directories(${CMAKE_BINARY_DIR})
 
-add_library(EbbRT 
+add_library(EbbRT
   ${CapnpSources}
-  /home/handong/github/EbbRT/common/src/CapnpMessage.cc
-  /home/handong/github/EbbRT/common/src/EbbAllocator.cc
-  /home/handong/github/EbbRT/common/src/Fdt.cc
-  /home/handong/github/EbbRT/common/src/IOBuf.cc
-  /home/handong/github/EbbRT/common/src/IOBufRef.cc
-  /home/handong/github/EbbRT/common/src/Message.cc
-  /home/handong/github/EbbRT/common/src/UniqueIOBuf.cc
-  /home/handong/github/EbbRT/common/src/StaticIOBuf.cc
-  /home/handong/github/EbbRT/common/src/SharedIOBufRef.cc
-  /home/handong/github/EbbRT/hosted/src/Clock.cc
-  /home/handong/github/EbbRT/hosted/src/ContextActivation.cc
-  /home/handong/github/EbbRT/hosted/src/Context.cc
-  /home/handong/github/EbbRT/hosted/src/EventManager.cc
-  /home/handong/github/EbbRT/hosted/src/GlobalIdMap.cc
-  /home/handong/github/EbbRT/hosted/src/LocalEntry.cc
-  /home/handong/github/EbbRT/hosted/src/LocalIdMap.cc
-  /home/handong/github/EbbRT/hosted/src/Messenger.cc
-  /home/handong/github/EbbRT/hosted/src/NodeAllocator.cc
-  /home/handong/github/EbbRT/hosted/src/Runtime.cc
-  /home/handong/github/EbbRT/hosted/src/Console.cc
+  $ENV{EBBRT_SRCDIR}/common/src/CapnpMessage.cc
+  $ENV{EBBRT_SRCDIR}/common/src/EbbAllocator.cc
+  $ENV{EBBRT_SRCDIR}/common/src/Fdt.cc
+  $ENV{EBBRT_SRCDIR}/common/src/IOBuf.cc
+  $ENV{EBBRT_SRCDIR}/common/src/IOBufRef.cc
+  $ENV{EBBRT_SRCDIR}/common/src/Message.cc
+  $ENV{EBBRT_SRCDIR}/common/src/UniqueIOBuf.cc
+  $ENV{EBBRT_SRCDIR}/common/src/StaticIOBuf.cc
+  $ENV{EBBRT_SRCDIR}/common/src/SharedIOBufRef.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/Clock.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/ContextActivation.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/Context.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/EventManager.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/GlobalIdMap.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/LocalEntry.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/LocalIdMap.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/Messenger.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/NodeAllocator.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/Runtime.cc
+  $ENV{EBBRT_SRCDIR}/hosted/src/Console.cc
 )
 
 if(USE_SYSTEM_IRTK)
@@ -135,7 +135,5 @@ INCLUDE_DIRECTORIES(${TBB_INSTALL_DIR}/include ${CMAKE_CURRENT_SOURCE_DIR})
 
 add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/reconstructionGPU2/)
 
-## patch based preparations 
+## patch based preparations
 #add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/patch-based/)
-
-
