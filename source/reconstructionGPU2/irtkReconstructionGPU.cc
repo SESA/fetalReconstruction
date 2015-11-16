@@ -65,19 +65,28 @@
 #include <stdlib.h>
 #include <utils.h>
 #include <thread>
+
+//#include <ebbrt/Context.h>
+//#include <ebbrt/ContextActivation.h>
+//#include <ebbrt/Runtime.h>
+//#include <ebbrt/NodeAllocator.h>
+
+/*#include <ebbrt/Context.h>
+#include <ebbrt/ContextActivation.h>
+#include <ebbrt/GlobalIdMap.h>
+#include <ebbrt/StaticIds.h>
+#include <ebbrt/NodeAllocator.h>
+#include <ebbrt/Runtime.h>
+
 #include <EbbRTStackRegistrations.h>
 #include <EbbRTSliceToVolumeRegistration.h>
 #include <EbbRTCoeffInit.h>
 
-#include <ebbrt/Context.h>
-#include <ebbrt/ContextActivation.h>
-#include <ebbrt/Runtime.h>
-#include <ebbrt/NodeAllocator.h>
-
+*/
 #include <boost/filesystem.hpp>
-#include <boost/serialization/vector.hpp>
-#include <boost/archive/text_oarchive.hpp>
-#include <boost/archive/text_iarchive.hpp>
+//#include <boost/serialization/vector.hpp>
+//#include <boost/archive/text_oarchive.hpp>
+//#include <boost/archive/text_iarchive.hpp>
 
 using namespace boost::filesystem;
 
@@ -2113,44 +2122,59 @@ void irtkReconstruction::CoeffInit() {
 
   // serialize here
   // hardcoded for now
-  string bindir = "/home/handong/github/EbbRT-irtk-serialize/baremetal/build/"
-                  "Release/AppMain.elf32";
+  // string bindir =
+  // "/home/handong/github/EbbRT-irtk-serialize/baremetal/build/"
+  //                "Release/AppMain.elf32";
+
+  
+  /*string bindir = "/home/handong/github/EbbRT-irtk-serialize/hosted/build/"
+                  "Release/bm/AppMain.elf32";
 
   static ebbrt::Runtime runtime;
   static ebbrt::Context c(runtime);
   ebbrt::ContextActivation activation(c);
   irtkReconstruction *reconstructor = this;
-  int numNodes = 4; //4 seems to be max for vCPUs
+  int numNodes = 2; // 4 seems to be max for vCPUs
 
   cout << "EbbRTCoeffInit " << endl;
 
   ebbrt::event_manager->Spawn([&reconstructor, bindir, numNodes]() {
-	  EbbRTCoeffInit::Create(reconstructor, numNodes)
-	      .Then([bindir,numNodes](ebbrt::Future<EbbRTCoeffInitEbbRef> f) {
+    EbbRTCoeffInit::Create(reconstructor, numNodes)
+        .Then([bindir, numNodes](ebbrt::Future<EbbRTCoeffInitEbbRef> f) {
           EbbRTCoeffInitEbbRef ref = f.Get();
 
-          // allocated baremetal AppMain.elf32
-          ebbrt::node_allocator->AllocateNode(bindir, numNodes, 2, 30);
+          std::cout << "#######################################EbbId: "
+                    << ref->getEbbId() << std::endl;
 
-          // test code to get EbbId
-	  std::cout << "EbbId: " << ref->getEbbId() << std::endl;
-          // ref->runJob(stacks.size());
+          for (int i = 0; i < numNodes; i++) {
+            ebbrt::NodeAllocator::NodeDescriptor nd =
+                ebbrt::node_allocator->AllocateNode(bindir, 1, 1, 16);
 
-          ref->waitReceive().Then([ref](ebbrt::Future<void> f) 
-	  {
-	      ebbrt::event_manager->Spawn([ref]() { ref->coeffinitParallel(); });
-	 });
-      });
+            nd.NetworkId().Then([ref](
+                ebbrt::Future<ebbrt::Messenger::NetworkId> f) {
+              ebbrt::Messenger::NetworkId nid = f.Get();
+              std::cout << nid.ToString() << std::endl;
+              ref->addNid(nid);
+            });
+          }
+
+          // waiting for all nodes to be initialized
+          ref->waitNodes().Then([ref](ebbrt::Future<void> f) {
+            f.Get();
+            std::cout << "all nodes initialized" << std::endl;
+            ebbrt::event_manager->Spawn([ref]() { ref->runJob(450000); });
+          });
+        });
   });
 
   c.Deactivate();
   c.Run();
   c.Reset();
-  
-  cout << " ... done." << endl;
 
-  //ParallelCoeffInit coeffinit(this);
-  //coeffinit();
+  cout << " ... done." << endl;
+  */
+   ParallelCoeffInit coeffinit(this);
+   coeffinit();
 
   // prepare image for volume weights, will be needed for Gaussian
   // Reconstruction

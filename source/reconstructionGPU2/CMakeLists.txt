@@ -128,10 +128,10 @@ add_executable(reconstruction_GPU2 reconstruction.cc irtkReconstructionGPU.cc
           irtkReconstructionGPU.h 
           perfstats.h
           stackMotionEstimator.cpp stackMotionEstimator.h
-	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTSliceToVolumeRegistration.cc
+	  #/home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTSliceToVolumeRegistration.cc
 	  /home/handong/github/EbbRT-irtk-serialize/hosted/src/EbbRTCoeffInit.cc
-	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTStackRegistrations.o
-	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTSliceToVolumeRegistration.o
+	  #/home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTStackRegistrations.o
+	  #/home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTSliceToVolumeRegistration.o
 	  /home/handong/github/EbbRT-irtk-serialize/hosted/build/Release/EbbRTCoeffInit.o
           )
 

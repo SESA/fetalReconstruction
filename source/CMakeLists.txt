@@ -91,6 +91,7 @@ CAPNP_GENERATE_CPP(CapnpSources CapnpHeaders ${CapnpFiles})
 include_directories(/home/handong/github/EbbRT/hosted/src/include)
 include_directories(/home/handong/github/EbbRT/common/src/include)
 include_directories(/home/handong/github/EbbRT-irtk-serialize/src)
+include_directories(/home/handong/github/EbbRT-irtk-serialize/hosted/src)
 include_directories(${CMAKE_BINARY_DIR})
 
 add_library(EbbRT 
