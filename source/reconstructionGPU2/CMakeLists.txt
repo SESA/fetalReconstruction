@@ -104,7 +104,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../IRTKSimple2/common++/include
 # endif(MSVC11)
 # endif(UNIX)
 
-find_package( Boost 1.53.0 REQUIRED COMPONENTS program_options filesystem system thread coroutine serialization)
+find_package( Boost 1.53.0 REQUIRED COMPONENTS program_options filesystem system thread coroutine serialization context)
 add_definitions(-DUSE_BOOST=1)
 
 if ( NOT Boost_FOUND )
