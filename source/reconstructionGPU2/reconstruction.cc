@@ -69,14 +69,14 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 #include <boost/filesystem.hpp>
 
-#include <ebbrt/Context.h>
+/*#include <ebbrt/Context.h>
 #include <ebbrt/ContextActivation.h>
 #include <ebbrt/GlobalIdMap.h>
 #include <ebbrt/StaticIds.h>
 #include <ebbrt/NodeAllocator.h>
 #include <ebbrt/Runtime.h>
 
-#include <EbbRTCoeffInit.h>
+#include <EbbRTCoeffInit.h>*/
 
 namespace po = boost::program_options;
 
@@ -96,7 +96,7 @@ const std::string currentDateTime() {
   return buf;
 }
 
-void func1(char **argv) {
+/*void func1(char **argv) {
 
   auto bindir =
       boost::filesystem::system_complete(argv[0]).parent_path() /
@@ -149,14 +149,14 @@ void func1(char **argv) {
   c.Reset();
 
   std::cout << "Finished" << std::endl;
-}
+  }*/
 
 int main(int argc, char **argv) {
   std::cout << "starting reconstruction on " << currentDateTime() << std::endl;
   pt::ptime start = pt::microsec_clock::local_time();
 
-  func1(argv);
-  func1(argv);
+  //func1(argv);
+  //func1(argv);
 
   // utility variables
   int i, ok;
@@ -928,8 +928,8 @@ int main(int argc, char **argv) {
 
     // Calculate matrix of transformation between voxels of slices and volume
     if (useCPU) {
-	func1(argv);
-      reconstruction.CoeffInit();
+	//func1(argv);
+      reconstruction.CoeffInit(argv);
     } else {
       reconstruction.UpdateGPUTranformationMatrices();
     }

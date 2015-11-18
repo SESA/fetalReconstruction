@@ -321,7 +321,7 @@ public:
   void MaskSlices();
 
   ///Calculate transformation matrix between slices and voxels
-  void CoeffInit();
+  void CoeffInit(char**);
 
   ///Reconstruction using weighted Gaussian PSF
   void GaussianReconstruction();

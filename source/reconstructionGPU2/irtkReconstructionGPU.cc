@@ -71,22 +71,21 @@
 //#include <ebbrt/Runtime.h>
 //#include <ebbrt/NodeAllocator.h>
 
-/*#include <ebbrt/Context.h>
+#include <ebbrt/Context.h>
 #include <ebbrt/ContextActivation.h>
 #include <ebbrt/GlobalIdMap.h>
 #include <ebbrt/StaticIds.h>
 #include <ebbrt/NodeAllocator.h>
 #include <ebbrt/Runtime.h>
 
-#include <EbbRTStackRegistrations.h>
-#include <EbbRTSliceToVolumeRegistration.h>
+//#include <EbbRTStackRegistrations.h>
+//#include <EbbRTSliceToVolumeRegistration.h>
 #include <EbbRTCoeffInit.h>
 
-*/
 #include <boost/filesystem.hpp>
-//#include <boost/serialization/vector.hpp>
-//#include <boost/archive/text_oarchive.hpp>
-//#include <boost/archive/text_iarchive.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 using namespace boost::filesystem;
 
@@ -2091,7 +2090,7 @@ public:
   }
 };
 
-void irtkReconstruction::CoeffInit() {
+void irtkReconstruction::CoeffInit(char **argv) {
   if (_debug)
     cout << "CoeffInit" << endl;
 
@@ -2104,37 +2103,16 @@ void irtkReconstruction::CoeffInit() {
   _slice_inside_cpu.resize(_slices.size());
 
   cout << "Initialising matrix coefficients..." << endl;
-  // std::ostringstream ofs;
-  // boost::archive::text_oarchive oa(ofs);
-
-  // this->_slices[0].Print();
-  // this->_reconstructed.Print();
-  // this->_transformations[0].Print();
-  // this->_mask.Print();
-  // cout << " " << endl;
-
-  // oa & this->_slices[0];
-  // oa & this->_reconstructed;
-  // oa & this->_transformations[0];
-  // oa & this->_mask;
-  // std::cout << ofs.str() << std::endl;
-  // exit(-1);
-
-  // serialize here
-  // hardcoded for now
-  // string bindir =
-  // "/home/handong/github/EbbRT-irtk-serialize/baremetal/build/"
-  //                "Release/AppMain.elf32";
-
   
-  /*string bindir = "/home/handong/github/EbbRT-irtk-serialize/hosted/build/"
-                  "Release/bm/AppMain.elf32";
-
+  auto bindir =
+      boost::filesystem::system_complete(argv[0]).parent_path() /
+      "/../../ext/irtk-serialize/hosted/build/Release/bm/AppMain.elf32";
+  
   static ebbrt::Runtime runtime;
   static ebbrt::Context c(runtime);
   ebbrt::ContextActivation activation(c);
   irtkReconstruction *reconstructor = this;
-  int numNodes = 2; // 4 seems to be max for vCPUs
+  int numNodes = 4; // 4 seems to be max for vCPUs
 
   cout << "EbbRTCoeffInit " << endl;
 
@@ -2148,7 +2126,7 @@ void irtkReconstruction::CoeffInit() {
 
           for (int i = 0; i < numNodes; i++) {
             ebbrt::NodeAllocator::NodeDescriptor nd =
-                ebbrt::node_allocator->AllocateNode(bindir, 1, 1, 16);
+                ebbrt::node_allocator->AllocateNode(bindir.string(), 4, 1, 2);
 
             nd.NetworkId().Then([ref](
                 ebbrt::Future<ebbrt::Messenger::NetworkId> f) {
@@ -2162,7 +2140,7 @@ void irtkReconstruction::CoeffInit() {
           ref->waitNodes().Then([ref](ebbrt::Future<void> f) {
             f.Get();
             std::cout << "all nodes initialized" << std::endl;
-            ebbrt::event_manager->Spawn([ref]() { ref->runJob(450000); });
+            ebbrt::event_manager->Spawn([ref]() { ref->coeffinitParallel2(); });
           });
         });
   });
@@ -2172,9 +2150,9 @@ void irtkReconstruction::CoeffInit() {
   c.Reset();
 
   cout << " ... done." << endl;
-  */
-   ParallelCoeffInit coeffinit(this);
-   coeffinit();
+  
+  //ParallelCoeffInit coeffinit(this);
+  //coeffinit();
 
   // prepare image for volume weights, will be needed for Gaussian
   // Reconstruction
