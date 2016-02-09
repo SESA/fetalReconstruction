@@ -5,13 +5,20 @@ export PATH=/usr/local/cuda-6.5/bin:${PATH}
 export LD_LIBRARY_PATH=/usr/local/cuda-6.5/lib64:${LD_LIBRARY_PATH}
 # Build fetalReconstruction for Ubunutu 14.04
 
-export ROOTDIR=${FR_ROOTDIR:-${PWD}/../}
+export ROOTDIR=${FR_ROOTDIR:-${HOME}/work/fetalReconstruction-orig/}
 export SRCDIR=${FR_SRCDIR:-$ROOTDIR/source}
 export BUILDDIR=${FR_BUILDDIR:-$SRCDIR/build}
 
+if [ ! -d $ROOTDIR ]; then
+  echo "Error: project directory not found: $ROOTDIR \n Set with ENV{FR_ROOTDIR}"
+  exit 1
+fi
+
 export CMAKE_FLAGS={$FR_CMAKE_FLAGS:-"-DCMAKE_C_COMPILER=gcc-4.8 \
   -DCMAKE_CXX_COMPILER=g++-4.8 -DCMAKE_BUILD_TYPE=Debug \
-  -DBUILD_WITH_TBB=OFF"}  
+  -DBUILD_WITH_TBB=OFF "}  
+
+export CMAKE_CXX_FLAGS={$FR_CMAKE_CXX_FLAGS:-" -DBUILD_CPU_ONLY "}
 
 export CUDA_SDK_INCLUDE_DIR=\
   ${FR_CUDA_SDK_INCLUDE_DIR:-/usr/local/cuda-6.5/samples}
@@ -23,3 +30,4 @@ fi
 pushd $BUILDDIR
 cmake $CMAKE_FLAGS ..
 popd
+make -C $BUILDDIR -j16

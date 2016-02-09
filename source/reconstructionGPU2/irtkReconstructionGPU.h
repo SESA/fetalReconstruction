@@ -56,7 +56,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <irtkTransformation.h>
 #include <irtkGaussianBlurring.h>
 
+#ifndef BUILD_CPU_ONLY
 #include "reconstruction_cuda2.cuh"
+#endif
 
 
 #include <vector>
