@@ -1,13 +1,13 @@
 #!/bin/bash
-set -x
 # env
 export PATH=/usr/local/cuda-6.5/bin:${PATH}
 export LD_LIBRARY_PATH=/usr/local/cuda-6.5/lib64:${LD_LIBRARY_PATH}
 # Build fetalReconstruction for Ubunutu 14.04
 
-export ROOTDIR=${FR_ROOTDIR:-${HOME}/work/fetalReconstruction-orig/}
+export ROOTDIR=${FR_ROOTDIR:-${HOME}/work/fetalReconstruction-orig}
 export SRCDIR=${FR_SRCDIR:-$ROOTDIR/source}
 export BUILDDIR=${FR_BUILDDIR:-$SRCDIR/build}
+export BINDIR=${FR_BUILDDIR:-$SRCDIR/bin}
 
 if [ ! -d $ROOTDIR ]; then
   echo "Error: project directory not found: $ROOTDIR \n Set with ENV{FR_ROOTDIR}"
@@ -31,3 +31,19 @@ pushd $BUILDDIR
 cmake $CMAKE_FLAGS ..
 popd
 make -C $BUILDDIR -j16
+
+if [ -a $BINDIR/reconstruction_GPU2 ]; then
+  chmod +x $BINDIR/reconstruction_GPU2
+fi
+
+echo "Build complete. Generating test run script:"
+cat << EOF > $ROOTDIR/runTestDataset.sh
+$BINDIR/reconstruction_GPU2 -o $ROOTDIR/bin/linux64/3TReconstruction.nii.gz -i \
+$ROOTDIR/data/14_3T_nody_001.nii.gz $ROOTDIR/data/10_3T_nody_001.nii.gz \
+$ROOTDIR/data/21_3T_nody_001.nii.gz $ROOTDIR/data/23_3T_nody_001.nii.gz -m \
+$ROOTDIR/data/mask_10_3T_brain_smooth.nii.gz \
+--disableBiasCorrection --useAutoTemplate --useSINCPSF --resolution 1.0 \
+--useCPU
+EOF
+chmod +x $ROOTDIR/runTestDataset.sh
+echo "$ROOTDIR/runTestDataset.sh"

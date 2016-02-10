@@ -46,6 +46,6 @@ endif(UNIX)
 IF(NOT USE_CPU)
   INCLUDE(${CMAKE_CURRENT_SOURCE_DIR}/CMakeLists_GPU.cmake)
 ELSE()
-  add_definitions(-DBUILD_CPU_ONLY>)
+  add_definitions(-DBUILD_CPU_ONLY)
 ENDIF()
 

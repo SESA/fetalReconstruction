@@ -52,6 +52,7 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef GPUWORKER_CUDA_CUH
 #define GPUWORKER_CUDA_CUH
 
+#ifndef BUILD_CPU_ONLY
 #include <cuda.h>
 #include <cuda_runtime.h>
 #include <helper_cuda.h>
@@ -73,6 +74,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <thrust/tuple.h>
 #include <thrust/count.h>
 #include "recon_volumeHelper.cuh"
+#else
+#include "recon_volumeHelper.h"
+#endif
 
 #if !USE_BOOST
 //use c++11 in std in case of VS 2012
@@ -88,7 +92,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 namespace bc = boost::container;
 #endif
 
+
+#ifndef BUILD_CPU_ONLY
 struct Reconstruction;
+#endif
 
 class GPUWorkerSync
 {
@@ -144,6 +151,7 @@ public:
 };
 
 
+#ifndef BUILD_CPU_ONLY
 class GPUWorkerCommunicator
 {
 public:
@@ -400,6 +408,7 @@ public:
 
   // TODO InitializeRobustStatistics - this function has to return values...
 };
+#endif //BUILD_CPU_ONLY
 
 
 #endif //GPUWORKER_CUDA_CUH

@@ -63,6 +63,11 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <math.h>
 #include <stdlib.h>
 
+#ifdef BUILD_CPU_ONLY
+#include "utils.h"
+#endif
+
+
 #include <boost/filesystem.hpp>
 using namespace boost::filesystem;
 
@@ -224,22 +229,14 @@ irtkReconstruction::irtkReconstruction(std::vector<int> dev, bool useCPUReg, boo
 
   _useCPUReg = useCPUReg;
   _useCPU = useCPU;
-  //FIXXME
-  //TODO as possible workaround, but ugly -- dactiveates multithreading in cu
- // reconstructionGPU = new Reconstruction(dev, !_useCPUReg);
-  /*if (_useCPUReg)
-  {
-    reconstructionGPU = new Reconstruction(dev, false); //workaround
-  }
-  else
-  {*/
+#ifndef BUILD_CPU_ONLY
   if(!useCPU)
   {
     reconstructionGPU = new Reconstruction(dev, true); //to produce the error for CPUReg and multithreaded GPUs
   }
-  //}
-
+#endif
 }
+
 
 
 irtkReconstruction::~irtkReconstruction(){ }
@@ -248,22 +245,28 @@ irtkReconstruction::~irtkReconstruction(){ }
 void irtkReconstruction::Set_debugGPU(bool val)
 {
   _debugGPU = val;
+#ifndef BUILD_CPU_ONLY
   if(!_useCPU)
     reconstructionGPU->_debugGPU = val;
+#endif
 }
 
 
 
 //////////////////////////////////////////////////////////////////////////////////
 //GPU helpers
+#ifndef BUILD_CPU_ONLY
 void irtkReconstruction::updateStackSizes(std::vector<uint3> stack_sizes_)
 {
    if(!_useCPU)
     reconstructionGPU->updateStackSizes(stack_sizes_);
 }
+#endif
 
 void irtkReconstruction::SyncGPU()
 {
+
+#ifndef BUILD_CPU_ONLY
   irtkGenericImage<float> mask_float_ = _mask; //check this
   std::cout << "SyncGPU()" << std::endl;
   reconstructionGPU->InitReconstructionVolume(make_uint3(_reconstructed.GetX(), _reconstructed.GetY(), _reconstructed.GetZ()),
@@ -342,8 +345,10 @@ void irtkReconstruction::SyncGPU()
     debugSlices.Write("debugSlices.nii");
     cudaDeviceSynchronize();
 }
+#endif
 }
 
+#ifndef BUILD_CPU_ONLY
 Matrix4 irtkReconstruction::toMatrix4(irtkMatrix mat)
 {
   Matrix4 mmat;
@@ -385,9 +390,11 @@ irtkMatrix irtkReconstruction::fromMatrix4(Matrix4 mat)
 
   return mmat;
 }
+#endif
 
 std::vector<irtkMatrix> irtkReconstruction::UpdateGPUTranformationMatrices()
 {
+#ifndef BUILD_CPU_ONLY
 
   std::vector<Matrix4> sI2W;
   std::vector<Matrix4> sW2I;
@@ -415,9 +422,10 @@ std::vector<irtkMatrix> irtkReconstruction::UpdateGPUTranformationMatrices()
     toMatrix4(_reconstructed.GetImageToWorldMatrix()), toMatrix4(_reconstructed.GetWorldToImageMatrix()));
 
   return transformations_;
+#endif
 }
 
-//GPU helpers end
+
 //////////////////////////////////////////////////////////////////////////////////
 
 
@@ -1002,9 +1010,11 @@ void irtkReconstruction::RestoreSliceIntensities()
 
 void irtkReconstruction::RestoreSliceIntensitiesGPU()
 {
+#ifndef BUILD_CPU_ONLY
   //TODO
   //_stack_factor
   reconstructionGPU->RestoreSliceIntensities(_stack_factor, _stack_index);
+#endif
 
 }
 
@@ -1061,7 +1071,9 @@ void irtkReconstruction::ScaleVolumeGPU()
     cout << "Scaling volume: ";
 
   //TODO
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->ScaleVolume();
+#endif
 }
 
 class ParallelSimulateSlices {
@@ -1144,6 +1156,7 @@ void irtkReconstruction::SimulateSlicesGPU()
     _slice_inside_gpu.clear();
     _slice_inside_gpu.resize(_slices.size());
   }
+#ifndef BUILD_CPU_ONLY
 
   //debug sync
   //reconstructionGPU->syncGPUrecon(_reconstructed.GetPointerToVoxels());
@@ -1177,6 +1190,7 @@ void irtkReconstruction::SimulateSlicesGPU()
     }
     std::cout << std::endl;
 }
+#endif
 }
 
 void irtkReconstruction::SimulateStacks(vector<irtkRealImage>& stacks)
@@ -1578,12 +1592,15 @@ void irtkReconstruction::generatePSFVolume()
     PSF.GetImageToWorldMatrix().Print();
   }
 
+
+#ifndef BUILD_CPU_ONLY
   //PSF = PSFn;
   reconstructionGPU->generatePSFVolume(PSF.GetPointerToVoxels(),
     make_uint3(PSF.GetX(), PSF.GetY(), PSF.GetZ()),
     make_float3(_slices[0].GetXSize(), _slices[0].GetYSize(), _slices[0].GetZSize()),
     make_float3(PSF.GetXSize(), PSF.GetYSize(), PSF.GetZSize()), toMatrix4(PSF.GetImageToWorldMatrix()),
     toMatrix4(PSF.GetWorldToImageMatrix()), _quality_factor, _use_SINC);
+#endif
 }
 
 void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &stacks,
@@ -1595,6 +1612,8 @@ void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &s
     cout << "CreateSlicesAndTransformations" << endl;
 
   std::vector<uint3> stack_sizes_;
+#ifndef BUILD_CPU_ONLY
+// FIXME: Migrate stack code
   //for each stack
   for (unsigned int i = 0; i < stacks.size(); i++) {
     //image attributes contain image and voxel size
@@ -1621,6 +1640,37 @@ void irtkReconstruction::CreateSlicesAndTransformations(vector<irtkRealImage> &s
   }
   if(!_useCPU)
     reconstructionGPU->updateStackSizes(stack_sizes_);
+#else 
+  uint3 temp;
+  //for each stack
+  for (unsigned int i = 0; i < stacks.size(); i++) {
+    //image attributes contain image and voxel size
+    irtkImageAttributes attr = stacks[i].GetImageAttributes();
+    //printf("stack sizes z: %d \n", attr._z);
+    temp.x = attr._x;
+    temp.y = attr._y;
+    temp.z = attr._z;
+    //stack_sizes_.push_back(make_uint3(attr._x, attr._y, attr._z));
+    stack_sizes_.push_back(temp);
+    //attr._z is number of slices in the stack
+    for (int j = 0; j < attr._z; j++) {
+      //create slice by selecting the appropreate region of the stack
+      irtkRealImage slice = stacks[i].GetRegion(0, 0, j, attr._x, attr._y, j + 1);
+      //set correct voxel size in the stack. Z size is equal to slice thickness.
+      slice.PutPixelSize(attr._dx, attr._dy, thickness[i]);
+      //remember the slice
+      _slices.push_back(slice);
+      _simulated_slices.push_back(slice);
+      _simulated_weights.push_back(slice);
+      _simulated_inside.push_back(slice);
+      //remeber stack index for this slice
+      _stack_index.push_back(i);
+      //initialize slice transformation with the stack transformation
+      _transformations.push_back(stack_transformations[i]);
+      _transformations_gpu.push_back(stack_transformations[i]);
+    }
+  }
+#endif
 
   cout << "Number of slices: " << _slices.size() << endl;
 }
@@ -1838,6 +1888,7 @@ public:
 
 void irtkReconstruction::testCPURegGPU()
 {
+#ifndef BUILD_CPU_ONLY
   if (_debugGPU)
   {
     std::vector<Matrix4> transf;
@@ -1853,12 +1904,13 @@ void irtkReconstruction::testCPURegGPU()
     reconstructionGPU->debugRegSlicesVolume(regTest.GetPointerToVoxels());
     regTest.Write("regTestCPU.nii");
   }
-
+#endif
 }
 
 
 void irtkReconstruction::PrepareRegistrationSlices()
 {
+#ifndef BUILD_CPU_ONLY
   irtkImageAttributes attr = _reconstructed.GetImageAttributes();
   irtkResamplingWithPadding<irtkRealPixel> resampling(attr._dx, attr._dx, attr._dx, -1);
 
@@ -1930,7 +1982,7 @@ void irtkReconstruction::PrepareRegistrationSlices()
     debugSlices.Write("debugRegistrationSlices.nii");
     cudaDeviceSynchronize();
   }
-
+#endif
 }
 class ParallelSliceToVolumeRegistrationGPU {
 public:
@@ -1950,28 +2002,34 @@ public:
       //TODO get current thread number, assign to stream
       //execute registration for single slice with streams
       int alls = reconstructor->_slices.size();
+#ifndef BUILD_CPU_ONLY
       int curid = (int)inputIndex%reconstructor->reconstructionGPU->devicesToUse.size(); //TODO improve. find number of CPUs
       printf("current proc ID %d dev_slice %d inputIndex %d\n", curid, devslice, inputIndex);
       printf("ERROR NOT WORKING ANYMORE\n");
       exit(-4646);
       //reconstructor->reconstructionGPU->registerSliceToVolume(reconstructor->_transf[inputIndex], inputIndex, devslice, curid);
+#endif
       devslice++;
     }
   }
 
   // execute
   void operator() () const {
+#ifndef BUILD_CPU_ONLY
     task_scheduler_init init(reconstructor->reconstructionGPU->devicesToUse.size());
+
     //tbb_no_threads
     parallel_for(blocked_range<size_t>(0, reconstructor->_slices.size()),
       *this);
     init.terminate();
+#endif
   }
 
 };
 
 void irtkReconstruction::SliceToVolumeRegistrationGPU()
 {
+#ifndef BUILD_CPU_ONLY
   if (_debug)
     cout << "SliceToVolumeRegistration" << endl;
 
@@ -2040,6 +2098,7 @@ void irtkReconstruction::SliceToVolumeRegistrationGPU()
     regTest.Write("regTestGPU.nii");
 }
 
+#endif
 }
 
 
@@ -2429,27 +2488,34 @@ void irtkReconstruction::CoeffInit()
 
 void irtkReconstruction::SyncCPU()
 {
+#ifndef BUILD_CPU_ONLY
   irtkGenericImage<float> trecon = _reconstructed_gpu;
 
 
   reconstructionGPU->syncCPU(trecon.GetPointerToVoxels());
   _reconstructed = trecon;
   printf("Sync done. ready for more...\n");
+#endif
+
 }
 
 irtkRealImage irtkReconstruction::GetReconstructedGPU()
 {
+
+#ifndef BUILD_CPU_ONLY
   irtkGenericImage<float> trecon = _reconstructed_gpu;
 
   //debug only
   reconstructionGPU->syncCPU(trecon.GetPointerToVoxels());
 
   return trecon;
+#endif
 }
 
 void irtkReconstruction::GaussianReconstructionGPU()
 {
 
+#ifndef BUILD_CPU_ONLY
   cout << "Gaussian reconstruction ... ";
   vector<int> voxel_num_gpu;
   reconstructionGPU->GaussianReconstruction(voxel_num_gpu);
@@ -2512,6 +2578,7 @@ void irtkReconstruction::GaussianReconstructionGPU()
 
   //printf("second test\n");
   //reconstructionGPU->registerSlicesToVolume();
+#endif
 #endif
 
 }
@@ -2667,9 +2734,11 @@ void irtkReconstruction::InitializeEMValuesGPU()
 
   _slice_weight_gpu.assign(_slices.size(), 1);
   _scale_gpu.assign(_slices.size(), 1);
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->UpdateScaleVector(_scale_gpu, _slice_weight_gpu);
 
   reconstructionGPU->InitializeEMValues();
+#endif
 
 }
 
@@ -2683,9 +2752,11 @@ void irtkReconstruction::InitializeEMGPU()
 
   _slice_weight_gpu.assign(_slices.size(), 1);
   _scale_gpu.assign(_slices.size(), 1);
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->UpdateScaleVector(_scale_gpu, _slice_weight_gpu);
 
   reconstructionGPU->InitializeEMValues();
+#endif
 
   //TODO CUDA
   //Find the range of intensities
@@ -2745,7 +2816,9 @@ void irtkReconstruction::InitializeRobustStatisticsGPU()
   if (_debug)
     cout << "InitializeRobustStatistics" << endl;
 
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->InitializeRobustStatistics(_sigma_gpu);
+#endif
 
   for (unsigned int inputIndex = 0; inputIndex < _slices.size(); inputIndex++) {
     //if slice does not have an overlap with ROI, set its weight to zero
@@ -2770,7 +2843,9 @@ void irtkReconstruction::InitializeRobustStatisticsGPU()
     cout << "Initializing robust statistics GPU: " << "sigma=" << sqrt(_sigma_gpu) << " " << "m=" << _m_gpu
     << " " << "mix=" << _mix_gpu << " " << "mix_s=" << _mix_s_gpu << endl;
 
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->UpdateScaleVector(_scale_gpu, _slice_weight_gpu);
+#endif
 
 }
 
@@ -2922,6 +2997,7 @@ void irtkReconstruction::EStepGPU()
 
   unsigned int inputIndex;
   vector<float> slice_potential_gpu(_slices.size(), 0);
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->EStep(_m_gpu, _sigma_gpu, _mix_gpu, slice_potential_gpu);
 
   if (_debugGPU)
@@ -2930,6 +3006,7 @@ void irtkReconstruction::EStepGPU()
     reconstructionGPU->debugWeights(bweights.GetPointerToVoxels());
     bweights.Write("testweightGPU.nii");
   }
+#endif
 
   //can stay on CPU
 
@@ -3167,8 +3244,11 @@ void irtkReconstruction::EStepGPU()
     cout << endl;
   }
 
+
+#ifndef BUILD_CPU_ONLY
   //TODO only slice weight
   reconstructionGPU->UpdateSliceWeights(_slice_weight_gpu);
+#endif
 
 }
 
@@ -3486,8 +3566,10 @@ void irtkReconstruction::ScaleGPU()
   if (_debug)
     cout << "Scale" << endl;
 
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->CalculateScaleVector(_scale_gpu);
   //_scale_gpu = reconstructionGPU->h_scales;
+#endif
   if (_debug || _debugGPU) {
     cout << setprecision(3);
     cout << "Slice scale GPU= ";
@@ -3643,6 +3725,7 @@ void irtkReconstruction::BiasGPU()
   if (_global_bias_correction)
     printf("_global_bias_correction is not yet fully implemented in CUDA\n");
 
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->CorrectBias(_sigma_bias, _global_bias_correction); //assuming globally constant pixel size
   if(_debugGPU)
   {
@@ -3650,6 +3733,7 @@ void irtkReconstruction::BiasGPU()
     reconstructionGPU->debugBias(bimg.GetPointerToVoxels());
     bimg.Write("biasFieldGPU.nii");
   }
+#endif
 
   if (_debug)
     cout << "done. " << endl;
@@ -3763,6 +3847,7 @@ void irtkReconstruction::SuperresolutionGPU(int iter)
   //Remember current reconstruction for edge-preserving smoothing
   original = _reconstructed;
 
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->Superresolution(iter, _slice_weight_gpu, _adaptive, _alpha, _min_intensity, _max_intensity, _delta,
     _lambda, _global_bias_correction, _sigma_bias, _low_intensity_cutoff); //assuming isotrop constant voxel size
 
@@ -3781,7 +3866,7 @@ void irtkReconstruction::SuperresolutionGPU(int iter)
     sprintf(buffer, "cmapGPU%i.nii", iter - 1);
     cmap.Write(buffer);
 }
-
+#endif
 }
 
 void irtkReconstruction::Superresolution(int iter)
@@ -3945,6 +4030,7 @@ public:
 
 void irtkReconstruction::MStepGPU(int iter)
 {
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->MStep(iter, _step, _sigma_gpu, _mix_gpu, _m_gpu);
   std::cout.precision(10);
   if (_debug || _debugGPU) {
@@ -3952,6 +4038,7 @@ void irtkReconstruction::MStepGPU(int iter)
     cout << "sigma = " << sqrt(_sigma_gpu) << " mix = " << _mix_gpu << " ";
     cout << " m = " << _m_gpu << endl;
   }
+#endif
 
 }
 
@@ -4384,6 +4471,7 @@ public:
 
 void irtkReconstruction::NormaliseBiasGPU(int iter)
 {
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->NormaliseBias(iter, _sigma_bias);
 
   if(_debugGPU)
@@ -4402,6 +4490,7 @@ void irtkReconstruction::NormaliseBiasGPU(int iter)
     sprintf(buffer, "smaskGPU%i.nii", iter);
     smask.Write(buffer);
 }
+#endif
 }
 
 void irtkReconstruction::NormaliseBias(int iter)
@@ -5017,7 +5106,9 @@ void irtkReconstruction::InvertStackTransformations(vector<irtkRigidTransformati
 
 void irtkReconstruction::MaskVolumeGPU()
 {
+#ifndef BUILD_CPU_ONLY
   reconstructionGPU->maskVolume();
+#endif
 }
 
 

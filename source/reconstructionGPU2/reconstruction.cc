@@ -59,6 +59,9 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <time.h>  
 //#include <irtkEvaluation.h>
 #include <boost/program_options.hpp>
+#ifdef BUILD_CPU_ONLY
+#include "utils.h"
+#endif
 
 namespace po = boost::program_options;
 
@@ -251,7 +254,9 @@ int main(int argc, char **argv)
   }
   else
   {
+#ifndef BUILD_CPU_ONLY
     cudaDeviceReset();
+#endif
   }
  
   if (useGPUReg) useCPUReg = false;
@@ -302,7 +307,7 @@ int main(int argc, char **argv)
     delete rigidTransf;
   }
 
-
+#ifndef BUILD_CPU_ONLY
   if (!useCPU)
   {
     //default use all devices > CP 3.0 that are available
@@ -345,7 +350,7 @@ int main(int argc, char **argv)
       return EXIT_FAILURE;
     }
   }
-
+#endif
   //Create reconstruction object
   // !useCPUReg = no multithreaded GPU, only multi-GPU
   irtkReconstruction reconstruction(devicesToUse, useCPUReg, useCPU); // to emulate error for multi-threaded GPU
@@ -549,12 +554,24 @@ int main(int argc, char **argv)
   tmpStacks.erase(tmpStacks.begin(), tmpStacks.end());
 
   std::vector<uint3> stack_sizes;
+#ifndef BUILD_CPU_ONLY
   //std::cout << "Stack sizes: "<< std::endl;
   for (int i = 0; i < stacks.size(); i++)
   {
     stack_sizes.push_back(make_uint3(stacks[i].GetX(), stacks[i].GetY(), stacks[i].GetZ()));
     //	std::cout << stack_sizes[i].x << " " << stack_sizes[i].y << " " << stack_sizes[i].z << " " << std::endl;
   }
+#else
+  uint3 temp; // = (uint3) malloc(sizeof(uint3));
+  //std::cout << "Stack sizes: "<< std::endl;
+  for (int i = 0; i < stacks.size(); i++)
+  {
+      temp.x = stacks[i].GetX();
+      temp.y = stacks[i].GetY();
+      temp.z = stacks[i].GetZ();
+      stack_sizes.push_back(temp);
+  }
+#endif
 
   //Create template volume with isotropic resolution 
   //if resolution==0 it will be determined from in-plane resolution of the image
