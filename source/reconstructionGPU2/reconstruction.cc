@@ -57,17 +57,10 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include <fstream>
 #include <iostream>
 #include <time.h>  
-//#include <irtkEvaluation.h>
 #include <boost/program_options.hpp>
-#ifdef BUILD_CPU_ONLY
 #include "utils.h"
-#endif
 
 namespace po = boost::program_options;
-
-#if HAVE_CULA
-#include "stackMotionEstimator.h"
-#endif
 
 using namespace std;
 
@@ -234,8 +227,6 @@ int main(int argc, char **argv)
   }
 
   
-  if (useCPU)
-  {
     //security measure for wrong input params
     useCPUReg = true;
     useGPUReg = false;
@@ -251,13 +242,6 @@ int main(int argc, char **argv)
     {
 	cout << "Using task_scheduler_init::automatic number of threads" << endl;
     }
-  }
-  else
-  {
-#ifndef BUILD_CPU_ONLY
-    cudaDeviceReset();
-#endif
-  }
  
   if (useGPUReg) useCPUReg = false;
 
@@ -307,50 +291,6 @@ int main(int argc, char **argv)
     delete rigidTransf;
   }
 
-#ifndef BUILD_CPU_ONLY
-  if (!useCPU)
-  {
-    //default use all devices > CP 3.0 that are available
-    int nDevices;
-    cudaGetDeviceCount(&nDevices);
-    if (nDevices < devicesToUse.size())
-    {
-      std::cerr << "FATAL ERROR: you cannot use more GPUs than you have in your rig. defaulting to max CP > 3.0 devices. " << std::endl;
-      devicesToUse.clear();
-    }
-    if (devicesToUse.empty())
-    {
-
-      for (int i = 0; i < nDevices; i++) {
-        cudaDeviceProp prop;
-        cudaGetDeviceProperties(&prop, i);
-        if (prop.major >= 3)
-        {
-          try
-          {
-            cudaError_t status = cudaSetDevice(i);
-            if (status == cudaSuccess)
-            {
-              if (devicesToUse.size() < numDevicesToUse)
-              {
-                devicesToUse.push_back(i);
-              }
-            }
-          }
-          catch (...)
-          {
-            cout << "skipping device " << i << '\n';
-          }
-        }
-      }
-    }
-    if (devicesToUse.empty())
-    {
-      std::cerr << "FATAL ERROR: no suitable devices with compute capability > 3.0 found that yre available. exiting" << std::endl;
-      return EXIT_FAILURE;
-    }
-  }
-#endif
   //Create reconstruction object
   // !useCPUReg = no multithreaded GPU, only multi-GPU
   irtkReconstruction reconstruction(devicesToUse, useCPUReg, useCPU); // to emulate error for multi-threaded GPU
@@ -511,34 +451,6 @@ int main(int argc, char **argv)
     //for template stact the transformation is identity
     irtkRealImage m = *mask;
 
-#if HAVE_CULA
-    if(useAutoTemplate)
-    {
-      //TODO would be better to do this for the masked stacks...
-      {
-        stackMotionEstimator mestimate;
-        for(i = 0; i < stacks.size(); i++)
-        {
-          reconstruction.TransformMask(tmpStacks[i],m,stack_transformations[i]);
-          //Crop template stack
-          reconstruction.CropImage(tmpStacks[i],m);
-          //now define template with motion estimation...
-
-          float motionestimate = mestimate.evaluateStackMotion(&tmpStacks[i]);
-          std::cout << "estimated motion: " << motionestimate << std::endl;
-          stackMotion.push_back(motionestimate);
-          if(motionestimate < tmp_motionestimate)
-          {
-            templateNumber = i;
-            tmp_motionestimate = motionestimate;
-          }
-        }
-      }
-      stats.sample("motion measurement");
-      std::cout << "Determined stack " << templateNumber << " as template. " << std::endl;
-  }
-#endif
-
     //now do it really with best stack
     reconstruction.TransformMask(stacks[templateNumber], m, stack_transformations[templateNumber]);
     //Crop template stack
@@ -554,14 +466,6 @@ int main(int argc, char **argv)
   tmpStacks.erase(tmpStacks.begin(), tmpStacks.end());
 
   std::vector<uint3> stack_sizes;
-#ifndef BUILD_CPU_ONLY
-  //std::cout << "Stack sizes: "<< std::endl;
-  for (int i = 0; i < stacks.size(); i++)
-  {
-    stack_sizes.push_back(make_uint3(stacks[i].GetX(), stacks[i].GetY(), stacks[i].GetZ()));
-    //	std::cout << stack_sizes[i].x << " " << stack_sizes[i].y << " " << stack_sizes[i].z << " " << std::endl;
-  }
-#else
   uint3 temp; // = (uint3) malloc(sizeof(uint3));
   //std::cout << "Stack sizes: "<< std::endl;
   for (int i = 0; i < stacks.size(); i++)
@@ -571,7 +475,6 @@ int main(int argc, char **argv)
       temp.z = stacks[i].GetZ();
       stack_sizes.push_back(temp);
   }
-#endif
 
   //Create template volume with isotropic resolution 
   //if resolution==0 it will be determined from in-plane resolution of the image
@@ -720,33 +623,8 @@ int main(int argc, char **argv)
   pt::ptime tick = pt::microsec_clock::local_time();
 
 
-  if (!useCPU)
-  {
-    //get data on GPU
-    reconstruction.SyncGPU();
-    if (!useCPUReg)
-    {
-      reconstruction.PrepareRegistrationSlices();
-    }
-    //return EXIT_SUCCESS;
-    stats.sample("SyncGPU");
-  }
-
-  //Initialise data structures for EM
-  if (useCPU)
-  {
-    reconstruction.InitializeEM();
-  }
-  else {
-    reconstruction.InitializeEMGPU();
-  }
+  reconstruction.InitializeEM();
   stats.sample("InitializeEM");
-
-  if (!useCPU)
-  {
-    //only one update
-    reconstruction.UpdateGPUTranformationMatrices();
-  }
 
   //interleaved registration-reconstruction iterations
   for (int iter = 0; iter < iterations; iter++)
@@ -785,33 +663,17 @@ int main(int argc, char **argv)
                 reconstruction.PackageToVolume(stacks, packages, true, true, iter - 2);
               else
                 printf("unexpected program path");
-              if (useCPUReg)
-              {
                 cout << "Slice To Volume Registration CPU" << ": " << endl;
                 reconstruction.SliceToVolumeRegistration();
-              }
-              else {
-                cout << "Slice To Volume Registration GPU" << ": " << endl;
-                reconstruction.SliceToVolumeRegistrationGPU();
-              }
               stats.sample("Registration");
             }
           }
         }
       }
       else
-        if (useCPUReg)
-        {
         printf("Slice To Volume Registration CPU\n");
         cout << "Slice To Volume Registration CPU" << ": " << endl;
         reconstruction.SliceToVolumeRegistration();
-        //reconstruction.testCPURegGPU();
-        }
-        else {
-          printf("Slice To Volume Registration GPU\n");
-          cout << "Slice To Volume Registration GPU" << ": " << endl;
-          reconstruction.SliceToVolumeRegistrationGPU();
-        }
         stats.sample("Registration");
 
         cout << endl;
@@ -854,36 +716,17 @@ int main(int argc, char **argv)
     {
       reconstruction.SpeedupOff();
     }
-    if (!useCPU)
-    {
-      reconstruction.generatePSFVolume();
-      stats.sample("generatePSFVolume");
-    }
 
 
     //Initialise values of weights, scales and bias fields
-    if (useCPU)
-    {
-      reconstruction.InitializeEMValues();
-    }
-    else {
-      reconstruction.InitializeEMValuesGPU();
-    }
+    reconstruction.InitializeEMValues();
     stats.sample("InitializeEMValues");
 
     //Calculate matrix of transformation between voxels of slices and volume
-    if (useCPU)
-    {
       reconstruction.CoeffInit();
-    }
-    else {
-      reconstruction.UpdateGPUTranformationMatrices();
-    }
     stats.sample("CoeffInit");
 
     //Initialize reconstructed image with Gaussian weighted reconstruction
-    if (useCPU)
-    {
       reconstruction.GaussianReconstruction();
       if (debug)
       {
@@ -891,47 +734,19 @@ int main(int argc, char **argv)
         sprintf(buffer, "GaussianReconstruction_CPU%i.nii", iter);
         reconstructed.Write(buffer);
       }
-    }
-    else {
-      reconstruction.GaussianReconstructionGPU();
-      if (debug || debug_gpu)
-      {
-        reconstructedGPU = reconstruction.GetReconstructedGPU();
-        sprintf(buffer, "GaussianReconstruction_GPU%i.nii", iter);
-        reconstructedGPU.Write(buffer);
-      }
-    }
     stats.sample("GaussianReconstruction");
 
     //return EXIT_SUCCESS;
     //Simulate slices (needs to be done after Gaussian reconstruction)
-    if (useCPU)
-    {
       reconstruction.SimulateSlices();
-    }
-    else {
-      reconstruction.SimulateSlicesGPU();
-    }
     stats.sample("SimulateSlices");
 
     //Initialize robust statistics parameters
-    if (useCPU)
-    {
       reconstruction.InitializeRobustStatistics();
-    }
-    else {
-      reconstruction.InitializeRobustStatisticsGPU();
-    }
     stats.sample("InitializeRS");
 
     //EStep
-    if (useCPU)
-    {
       reconstruction.EStep();
-    }
-    else {
-      reconstruction.EStepGPU();
-    }
     stats.sample("EStep");
     //return EXIT_SUCCESS; 
 
@@ -953,8 +768,6 @@ int main(int argc, char **argv)
       if (intensity_matching)
       {
         //calculate bias fields
-        if (useCPU)
-        {
           if (!disableBiasCorr)
           {
             if (sigma > 0)
@@ -962,34 +775,11 @@ int main(int argc, char **argv)
           }
           //calculate scales
           reconstruction.Scale();
-        }
-        else {
-          //TODO try out N4 bias correction
-          if (!disableBiasCorr)
-          {
-            if (sigma > 0)
-              reconstruction.BiasGPU();
-          }
-          //calculate scales
-          reconstruction.ScaleGPU();
-        }
         stats.sample("Bias and Scale");
       }
 
       //MStep and update reconstructed volume
-      if (useCPU)
-      {
         reconstruction.Superresolution(i + 1);
-
-#if 0
-        reconstructed = reconstruction.GetReconstructed();
-        sprintf(buffer, "superCPU%i.nii", i);
-        reconstructed.Write(buffer);
-#endif
-      }
-      else {
-        reconstruction.SuperresolutionGPU(i + 1);
-      }
       stats.sample("Superresolution");
 
       //return EXIT_SUCCESS; 
@@ -999,167 +789,67 @@ int main(int argc, char **argv)
         if (!disableBiasCorr)
         {
 
-          if (useCPU)
-          {
             if ((sigma > 0) && (!global_bias_correction))
               reconstruction.NormaliseBias(i);
-          }
-          else {
-            if ((sigma > 0) && (!global_bias_correction))
-              reconstruction.NormaliseBiasGPU(i);
-          }
-
         }
         stats.sample("NormaliseBias");
       }
 
       // Simulate slices (needs to be done
       // after the update of the reconstructed volume)
-      if (useCPU)
-      {
         reconstruction.SimulateSlices();
-      }
-      else {
-        reconstruction.SimulateSlicesGPU();
-      }
       stats.sample("SimulateSlices");
-      if (useCPU)
-      {
         reconstruction.MStep(i + 1);
-      }
-      else {
-        reconstruction.MStepGPU(i + 1);
-      }
       stats.sample("MStep");
-      if (useCPU)
-      {
         //E-step
         reconstruction.EStep();
-      }
-      else {
-        reconstruction.EStepGPU();
-      }
       stats.sample("EStep");
 
       //Save intermediate reconstructed image
       if (debug || debug_gpu)
       {
 
-        if (useCPU)
-        {
           reconstructed = reconstruction.GetReconstructed();
           sprintf(buffer, "superCPU%i.nii", i);
           reconstructed.Write(buffer);
-        }
-        else {
-          reconstructedGPU = reconstruction.GetReconstructedGPU();
-          sprintf(buffer, "superGPU%i.nii", i);
-          reconstructedGPU.Write(buffer);
-        }
       }
       printf("%d ", i);
     }//end of reconstruction iterations
 
     //Mask reconstructed image to ROI given by the mask
-    if (useCPU)
-    {
       reconstruction.MaskVolume();
-    }
-    else {
-      reconstruction.MaskVolumeGPU();
-
-    }
     stats.sample("MaskVolume");
 
     //Save reconstructed image
-    if (useCPU)
-    {
       reconstructed = reconstruction.GetReconstructed();
       sprintf(buffer, "image%i_CPU.nii", iter);
       reconstructed.Write(buffer);
-    }
-    else {
-      reconstruction.SyncCPU();
-      stats.sample("SyncCPU");
-      reconstructed = reconstruction.GetReconstructed();
-      sprintf(buffer, "image%i_GPU.nii", iter);
-      reconstructed.Write(buffer);
-      //get quality gradient
-      /*if (iter > 0)
-      {
-      irtkEvaluation eval(reconstructed, lastReconstructed);
-      EvalResult res = eval.evaluate();
-      std::cout << "PSNR: " << res.psnr << std::endl;
-      ofstream timefile;
-      timefile.open("psnr.txt", ios::out | ios::app);
-      timefile << res.psnr << "\n";
-      timefile.close();
-      }
-      else
-      {
-      //compare difference to first recon
-      lastReconstructed = reconstructed;
-      }*/
-
-    }
 
     //Evaluate - write number of included/excluded/outside/zero slices in each iteration in the file
     if (!no_log) {
       cout.rdbuf(fileEv.rdbuf());
     }
 
-    if (useCPU)
-    {
       reconstruction.Evaluate(iter);
       cout << endl;
-    }
-    else {
-      reconstruction.EvaluateGPU(iter);
-      cout << endl;
-    }
     if (!no_log) {
       cout.rdbuf(strm_buffer);
     }
     printf("\n");
   }// end of interleaved registration-reconstruction iterations
 
-  //reconstruction.SyncCPU();
-  if (useCPU)
-  {
     reconstruction.RestoreSliceIntensities();
-  }
-  else {
-    reconstruction.RestoreSliceIntensitiesGPU();
-  }
   stats.sample("RestoreSliceInt.");
 
-  if (useCPU)
-  {
     reconstruction.ScaleVolume();
-  }
-  else {
-    reconstruction.ScaleVolumeGPU();
-  }
   stats.sample("ScaleVolume");
 
-  if (!useCPU)
-  {
-    //final sync
-    reconstruction.SyncCPU();
-    stats.sample("SyncCPU");
-  }
 
   pt::ptime now = pt::microsec_clock::local_time();
   pt::time_duration diff = now - tick;
   double mss = diff.total_milliseconds() / 1000.0;
 
-  if (useCPU)
-  {
     sprintf(buffer, "performance_CPU_%s.txt", currentDateTime().c_str());
-  }
-  else {
-    sprintf(buffer, "performance_GPU_%s.txt", currentDateTime().c_str());
-  }
   ofstream perf_file(buffer);
   stats.print();
   stats.print(perf_file);
