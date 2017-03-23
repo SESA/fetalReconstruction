@@ -77,6 +77,7 @@ public:
   /// Print attributes
   void Print();
 
+  void Print2(string s);
 };
 
 inline irtkImageAttributes::irtkImageAttributes()
@@ -207,6 +208,17 @@ inline void irtkImageAttributes::Print()
   cerr<<_xaxis[0]<<" "<<_xaxis[1]<<" "<<_xaxis[2]<<endl;
   cerr<<_yaxis[0]<<" "<<_yaxis[1]<<" "<<_yaxis[2]<<endl;
   cerr<<_zaxis[0]<<" "<<_zaxis[1]<<" "<<_zaxis[2]<<endl;
+}
+
+inline void irtkImageAttributes::Print2(string s)
+{
+	
+  cout<< s << _x<<" "<<_y<<" "<<_z<<" "<<_t<<endl;
+  cout<< s << _dx<<" "<<_dy<<" "<<_dz<<" "<<_dt<<endl;
+  cout<< s << _xorigin<<" "<<_yorigin<<" "<<_zorigin<<" "<<_torigin<<endl;
+  cout<< s << _xaxis[0]<<" "<<_xaxis[1]<<" "<<_xaxis[2]<<endl;
+  cout<< s << _yaxis[0]<<" "<<_yaxis[1]<<" "<<_yaxis[2]<<endl;
+  cout<< s << _zaxis[0]<<" "<<_zaxis[1]<<" "<<_zaxis[2]<<endl;
 }
 
 inline int irtkImageAttributes::LatticeToIndex(int i, int j, int k, int l) const

@@ -649,6 +649,8 @@ int main(int argc, char **argv)
       cout << "Slice To Volume Registration " << ": " << endl;
       */
       //if((packages.size()>0)&&(iter<(iterations-1)))
+      
+      
       if ((packages.size() > 0) && (iter <= iterations*(levels - 1) / levels) && (iter < (iterations - 1)))
       {
         if (iter == 1)
@@ -727,38 +729,36 @@ int main(int argc, char **argv)
     stats.sample("InitializeEMValues");
 
     //Calculate matrix of transformation between voxels of slices and volume
-      reconstruction.CoeffInit();
+    reconstruction.CoeffInit();
     stats.sample("CoeffInit");
 
     //Initialize reconstructed image with Gaussian weighted reconstruction
-      reconstruction.GaussianReconstruction();
-      if (debug)
-      {
-        reconstructed = reconstruction.GetReconstructed();
-        sprintf(buffer, "GaussianReconstruction_CPU%i.nii", iter);
-        reconstructed.Write(buffer);
-      }
+    reconstruction.GaussianReconstruction();
+    if (debug)
+    {
+      reconstructed = reconstruction.GetReconstructed();
+      sprintf(buffer, "GaussianReconstruction_CPU%i.nii", iter);
+      reconstructed.Write(buffer);
+    }
     stats.sample("GaussianReconstruction");
 
     //return EXIT_SUCCESS;
     //Simulate slices (needs to be done after Gaussian reconstruction)
-      reconstruction.SimulateSlices();
+    reconstruction.SimulateSlices();
     stats.sample("SimulateSlices");
 
     //Initialize robust statistics parameters
-      reconstruction.InitializeRobustStatistics();
+    reconstruction.InitializeRobustStatistics();
     stats.sample("InitializeRS");
 
     //EStep
-      reconstruction.EStep();
+    reconstruction.EStep();
     stats.sample("EStep");
     //return EXIT_SUCCESS; 
 
     //number of reconstruction iterations
     if (iter == (iterations - 1))
-    {
       rec_iterations = rec_iterations_last;
-    }
     else
       rec_iterations = rec_iterations_first;
 
@@ -778,8 +778,10 @@ int main(int argc, char **argv)
         //calculate bias fields
           if (!disableBiasCorr)
           {
-            if (sigma > 0)
+            if (sigma > 0) {
+              cout << "reconstruction.Bias()" << endl;
               reconstruction.Bias();
+            }
           }
           //calculate scales
           reconstruction.Scale();
@@ -797,8 +799,10 @@ int main(int argc, char **argv)
         if (!disableBiasCorr)
         {
 
-            if ((sigma > 0) && (!global_bias_correction))
+            if ((sigma > 0) && (!global_bias_correction)) {
+              cout << "reconstruction.NormalizeBias()" << endl;
               reconstruction.NormaliseBias(i);
+            }
         }
         stats.sample("NormaliseBias");
       }

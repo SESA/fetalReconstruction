@@ -300,7 +300,7 @@ void irtkRigidTransformation::JacobianDOFs(double jac[3], int dof, double x, dou
   }
 }
 
-void irtkRigidTransformation::Print()
+void irtkRigidTransformation::Print2()
 {
   cout.setf(ios::right);
   cout.setf(ios::fixed);
@@ -314,6 +314,24 @@ void irtkRigidTransformation::Print()
   cout.precision(6);
   cout.unsetf(ios::right);
   cout.unsetf(ios::fixed);
+}
+
+void irtkRigidTransformation::Print()
+{
+  /*
+  cout.setf(ios::right);
+  cout.setf(ios::fixed);
+  cout.precision(4);
+  if (_status[TX]  == _Active) cout << "tx = " << setw(7) << _tx << " ";
+  if (_status[TY]  == _Active) cout << "ty = " << setw(7) << _ty << " ";
+  if (_status[TZ]  == _Active) cout << "tz = " << setw(7) << _tz << " ";
+  if (_status[RX]  == _Active) cout << "rx = " << setw(7) << _rx << " ";
+  if (_status[RY]  == _Active) cout << "ry = " << setw(7) << _ry << " ";
+  if (_status[RZ]  == _Active) cout << "rz = " << setw(7) << _rz << endl;
+  cout.precision(6);
+  cout.unsetf(ios::right);
+  cout.unsetf(ios::fixed);
+  */
 }
 
 bool irtkRigidTransformation::IsIdentity()

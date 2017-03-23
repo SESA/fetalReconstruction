@@ -1833,16 +1833,17 @@ public:
 
     irtkImageAttributes attr = reconstructor->_reconstructed.GetImageAttributes();
 
+    //attr.Print2("[ParallelSliceToVolumeRegistration input] attributes: ");
+
     for (size_t inputIndex = r.begin(); inputIndex != r.end(); ++inputIndex) {
 
       irtkImageRigidRegistrationWithPadding registration;
       irtkGreyPixel smin, smax;
       irtkGreyImage target;
-      irtkRealImage slice, w, b, t;
+      irtkRealImage t;
       irtkResamplingWithPadding<irtkRealPixel> resampling(attr._dx, attr._dx, attr._dx, -1);
-      // irtkReconstruction dummy_reconstruction; // this also creats an unwanted instance of the GPU reconstruction
+      // This also creats an unwanted instance of the GPU reconstruction
 
-      //target = _slices[inputIndex];
       t = reconstructor->_slices[inputIndex];
       resampling.SetInput(&reconstructor->_slices[inputIndex]);
       resampling.SetOutput(&t);
@@ -1854,23 +1855,41 @@ public:
       if (smax > -1) {
         //put origin to zero
         irtkRigidTransformation offset;
-        //dummy_reconstruction.ResetOrigin(target,offset);
         irtkReconstruction::ResetOrigin(target, offset);
         irtkMatrix mo = offset.GetMatrix();
         irtkMatrix m = reconstructor->_transformations[inputIndex].GetMatrix();
         m = m*mo;
         reconstructor->_transformations[inputIndex].PutMatrix(m);
-        //std::cout << " ofsMatrix: " << inputIndex << std::endl;
-        //reconstructor->_transformations[inputIndex].GetMatrix().Print();
+        
+        //cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " smin: " << smin << endl;
+        //cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " smax: " << smax << endl;
+        //cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " target: " << reconstructor->SumImage(target) << endl;
+        //cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " offset: ";
+        //offset.Print2();
+        //cout << endl;
 
         irtkGreyImage source = reconstructor->_reconstructed;
         registration.SetInput(&target, &source);
         registration.SetOutput(&reconstructor->_transformations[inputIndex]);
         registration.GuessParameterSliceToVolume();
         registration.SetTargetPadding(-1);
+
+        cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " transformation: ";
+        reconstructor->_transformations[inputIndex].Print2();
+        cout << endl;
+
         registration.Run();
 
-        reconstructor->_slices_regCertainty[inputIndex] = registration.last_similarity;
+        cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " transformation: ";
+        reconstructor->_transformations[inputIndex].Print2();
+        cout << endl;
+
+        //cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " target: " << reconstructor->SumImage(target) << endl;
+        //cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " offset: ";
+        //offset.Print2();
+        //cout << endl;
+
+        //reconstructor->_slices_regCertainty[inputIndex] = registration.last_similarity;
         //undo the offset
         mo.Invert();
         m = reconstructor->_transformations[inputIndex].GetMatrix();
@@ -2906,6 +2925,9 @@ void irtkReconstruction::InitializeRobustStatistics()
 
   PrintImageSums("[InitializeRobustStatistics output]");
   cout << "[InitializeRobustStatistics output] _sigmaCPU: " << _sigma_cpu << endl;
+  cout << "[InitializeRobustStatistics output] _sigmaSCPU: " << _sigma_s_cpu << endl;
+  cout << "[InitializeRobustStatistics output] _mixCPU: " << _mix_cpu << endl;
+  cout << "[InitializeRobustStatistics output] _mixSCPU: " << _mix_s_cpu << endl;
   cout << "[InitializeRobustStatistics output] _mCPU: " << _m_cpu << endl;
 }
 
@@ -3407,6 +3429,14 @@ void irtkReconstruction::EStep()
   cout << "[EStepII output] _sum2: " << sum2 << endl;
   cout << "[EStepII output] _sigmaSCPU: " << _sigma_s_cpu << endl;
   cout << "[EStepII output] _sigmaS2CPU: " << _sigma_s2_cpu << endl;
+
+  //cout << "[EStepIII input] _meanSCPU: " << _mean_s_cpu << endl;
+  //cout << "[EStepIII input] _meanS2CPU: " << _mean_s2_cpu << endl;
+  //cout << "[EStepIII input] _mixSCPU: " << _mix_s_cpu << endl;
+  //cout << "[EStepIII input] _sigmaSCPU: " << _sigma_s_cpu << endl;
+  //cout << "[EStepIII input] _sigmaS2CPU: " << _sigma_s2_cpu << endl;
+  //cout << "[EStepIII input] _den: " << den << endl;
+  //PrintImageSums("[EStepIII input]");
 
   //Calculate slice weights
   double gs1, gs2;

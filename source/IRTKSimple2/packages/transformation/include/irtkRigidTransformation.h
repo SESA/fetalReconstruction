@@ -148,6 +148,8 @@ public:
   /// Prints the parameters of the transformation
   virtual void Print();
 
+  void Print2();
+
   /// Check file header
   static int CheckHeader(char *);
 
