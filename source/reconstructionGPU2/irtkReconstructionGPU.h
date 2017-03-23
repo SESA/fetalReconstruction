@@ -508,6 +508,14 @@ public:
   friend class ParallelAdaptiveRegularization1;
   friend class ParallelAdaptiveRegularization2;
   friend class ParallelSliceToVolumeRegistrationGPU;
+
+  inline double SumImage(irtkRealImage img);
+
+  inline void PrintImageSums(string s);
+
+  inline void PrintVectorSums(vector<irtkRealImage> images, string name);
+
+  inline void PrintAttributeVectorSums();
 };
 
 inline double irtkReconstruction::G(double x, double s)
@@ -598,6 +606,41 @@ inline void irtkReconstruction::SetSmoothingParameters(double delta, double lamb
 inline void irtkReconstruction::SetForceExcludedSlices(vector<int>& force_excluded)
 {
   _force_excluded = force_excluded;
+}
+
+inline double irtkReconstruction::SumImage(irtkRealImage img) {
+  float sum = 0.0;
+  irtkRealPixel *ap = img.GetPointerToVoxels();
+
+  for (int j = 0; j < img.GetNumberOfVoxels(); j++) {
+      sum += (float)*ap;
+    ap++;
+  }
+  return (double)sum;
+}
+
+inline void irtkReconstruction::PrintImageSums(string s) {
+  cout << fixed << s << " _reconstructed: " 
+       << SumImage(_reconstructed) << endl;
+
+  cout << fixed << s << " _mask: "
+       << SumImage(_mask) << endl;
+}
+
+inline void irtkReconstruction::PrintVectorSums(vector<irtkRealImage> images, 
+    string name) {
+  for (int i = 0; i < (int) images.size(); i++) {
+    cout << fixed << name << "[" << i << "]: " << SumImage(images[i]) << endl;
+  }
+}
+
+inline void irtkReconstruction::PrintAttributeVectorSums() {
+  PrintVectorSums(_slices, "_slices");
+  PrintVectorSums(_simulated_slices, "_simulatedSlices");
+  PrintVectorSums(_simulated_inside, "_simulatedInside");
+  PrintVectorSums(_simulated_weights, "_simulatedWeights");
+  PrintVectorSums(_weights, "_weights");
+  PrintVectorSums(_bias, "_bias");
 }
 
 #endif

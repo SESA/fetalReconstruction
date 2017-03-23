@@ -496,13 +496,15 @@ int main(int argc, char **argv)
   ofstream file_e(name.c_str());
   //files for reconstruction output
   name = log_id + "log-reconstruction.txt";
+  /*
   ofstream file2(name.c_str());
+  */
   name = log_id + "log-evaluation.txt";
   ofstream fileEv(name.c_str());
 
   //set precision
-  cout << setprecision(3);
-  cerr << setprecision(3);
+  cout << setprecision(6);
+  cerr << setprecision(6);
 
   //perform volumetric registration of the stacks
   //redirect output to files
@@ -633,17 +635,19 @@ int main(int argc, char **argv)
     if (!no_log) {
       cout.rdbuf(strm_buffer);
     }
-    cout << "Iteration " << iter << ". " << endl;
+    cout << "[Iteration " << iter << "] " << endl;
 
     //perform slice-to-volume registrations - skip the first iteration 
     if (iter > 0)
     {
       if (!no_log) {
         cerr.rdbuf(file_e.rdbuf());
-        cout.rdbuf(file.rdbuf());
+        //cout.rdbuf(file.rdbuf());
       }
+      /*
       cout << "Iteration " << iter << ": " << endl;
       cout << "Slice To Volume Registration " << ": " << endl;
+      */
       //if((packages.size()>0)&&(iter<(iterations-1)))
       if ((packages.size() > 0) && (iter <= iterations*(levels - 1) / levels) && (iter < (iterations - 1)))
       {
@@ -662,17 +666,15 @@ int main(int argc, char **argv)
               if (iter >= 4)
                 reconstruction.PackageToVolume(stacks, packages, true, true, iter - 2);
               else
-                printf("unexpected program path");
-                cout << "Slice To Volume Registration CPU" << ": " << endl;
+                cout << "[unexpected program path] Slice To Volume Registration CPU (1)" << endl;
                 reconstruction.SliceToVolumeRegistration();
-              stats.sample("Registration");
+                stats.sample("Registration");
             }
           }
         }
       }
       else
-        printf("Slice To Volume Registration CPU\n");
-        cout << "Slice To Volume Registration CPU" << ": " << endl;
+        cout << "Slice To Volume Registration CPU (2)" << endl;
         reconstruction.SliceToVolumeRegistration();
         stats.sample("Registration");
 
@@ -683,10 +685,12 @@ int main(int argc, char **argv)
     }
 
     //Write to file
+    /*
     if (!no_log) {
       cout.rdbuf(file2.rdbuf());
     }
-    cout << endl << endl << "Iteration " << iter << ": " << endl << endl;
+    cout << endl << endl << "[Iteration " << iter << "] " << endl << endl;
+    */
 
     //Set smoothing parameters 
     //amount of smoothing (given by lambda) is decreased with improving alignment
@@ -763,7 +767,11 @@ int main(int argc, char **argv)
     for (i = 0; i < rec_iterations; i++)
     {
 
-      cout << endl << "  Reconstruction iteration " << i << ". " << endl;
+      cout << endl << "[Reconstruction iteration " << i << "]" << endl;
+
+      cout << "[Bias input] _intensityMatching: " << intensity_matching << endl;
+      cout << "[Bias input] _disableBiasCorr: " << disableBiasCorr << endl;
+      cout << "[Bias input] _sigma: " << sigma << endl;
 
       if (intensity_matching)
       {
@@ -797,28 +805,32 @@ int main(int argc, char **argv)
 
       // Simulate slices (needs to be done
       // after the update of the reconstructed volume)
-        reconstruction.SimulateSlices();
+      reconstruction.SimulateSlices();
       stats.sample("SimulateSlices");
-        reconstruction.MStep(i + 1);
+
+      reconstruction.MStep(i + 1);
       stats.sample("MStep");
-        //E-step
-        reconstruction.EStep();
+
+      //E-step
+      reconstruction.EStep();
       stats.sample("EStep");
 
       //Save intermediate reconstructed image
-      if (debug || debug_gpu)
-      {
-
+      if (debug || debug_gpu) {
           reconstructed = reconstruction.GetReconstructed();
           sprintf(buffer, "superCPU%i.nii", i);
           reconstructed.Write(buffer);
       }
-      printf("%d ", i);
+
     }//end of reconstruction iterations
 
+    reconstruction.PrintImageSums("[End of inner loop]");
+
     //Mask reconstructed image to ROI given by the mask
-      reconstruction.MaskVolume();
+    reconstruction.MaskVolume();
     stats.sample("MaskVolume");
+
+    reconstruction.PrintImageSums("[MaskVolume output]");
 
     //Save reconstructed image
       reconstructed = reconstruction.GetReconstructed();
@@ -838,12 +850,13 @@ int main(int argc, char **argv)
     printf("\n");
   }// end of interleaved registration-reconstruction iterations
 
-    reconstruction.RestoreSliceIntensities();
+  reconstruction.RestoreSliceIntensities();
   stats.sample("RestoreSliceInt.");
 
-    reconstruction.ScaleVolume();
+  reconstruction.ScaleVolume();
   stats.sample("ScaleVolume");
 
+  reconstruction.PrintImageSums("[End of outer loop]");
 
   pt::ptime now = pt::microsec_clock::local_time();
   pt::time_duration diff = now - tick;
