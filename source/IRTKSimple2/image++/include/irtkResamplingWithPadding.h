@@ -14,11 +14,11 @@
 
 #define _IRTKRESAMPLINGWITHPADDING_H
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
 template <class VoxelType> class irtkMultiThreadedResamplingWithPadding;
 
-#endif
+#endif*/
 
 /**
  * Class for resampling of padded images
@@ -35,11 +35,11 @@ template <class VoxelType> class irtkMultiThreadedResamplingWithPadding;
 template <class VoxelType> class irtkResamplingWithPadding : public irtkResampling<VoxelType>
 {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
   friend class irtkMultiThreadedResamplingWithPadding<VoxelType>;
 
-#endif
+#endif*/
 
 protected:
 

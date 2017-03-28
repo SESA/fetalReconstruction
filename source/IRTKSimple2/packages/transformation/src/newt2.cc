@@ -100,7 +100,7 @@ void newt2(float x[], int n, int *check, void (*vecfunc)(int, float [], float []
   gsl_multiroot_function_fdf f = {&evaluate_f,
                                   &evaluate_df,
                                   &evaluate_fdf,
-                                  n, NULL};
+                                  (size_t) n, NULL};
 
   gsl_vector *xvec = gsl_vector_alloc(n);
   for (i = 0; i < n; i++) {

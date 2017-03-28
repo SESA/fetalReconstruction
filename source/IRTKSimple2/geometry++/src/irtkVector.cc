@@ -78,16 +78,16 @@ ostream& operator<< (ostream& os, const irtkVector &v)
   // Write keyword
   os << "irtkVector " << v._rows << endl;
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)v._vector, (char *)v._vector, v._rows);
-#endif
+//#ifndef WORDS_BIGENDIAN
+  //swap64((char *)v._vector, (char *)v._vector, v._rows);
+//#endif
 
   // Write binary data
   os.write((char *) &(v._vector[0]), v._rows*sizeof(double));
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)v._vector, (char *)v._vector, v._rows);
-#endif
+//#ifndef WORDS_BIGENDIAN
+  //swap64((char *)v._vector, (char *)v._vector, v._rows);
+//#endif
 
   return os;
 }
@@ -118,9 +118,9 @@ istream& operator>> (istream& is, irtkVector &v)
   // Read matrix
   is.read((char *) &(v._vector[0]), rows*sizeof(double));
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)v._vector, (char *)v._vector, v._rows);
-#endif
+//#ifndef WORDS_BIGENDIAN
+  //swap64((char *)v._vector, (char *)v._vector, v._rows);
+//#endif
 
   return is;
 }

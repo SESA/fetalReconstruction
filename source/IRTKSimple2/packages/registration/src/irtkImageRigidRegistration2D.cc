@@ -14,7 +14,7 @@
 
 #include <irtkHomogeneousTransformationIterator.h>
 
-#include <irtkMultiThreadedImageRigidRegistration2D.h>
+//#include <irtkMultiThreadedImageRigidRegistration2D.h>
 
 void irtkImageRigidRegistration2D::GuessParameter()
 {
@@ -86,9 +86,9 @@ void irtkImageRigidRegistration2D::GuessParameter()
 
 double irtkImageRigidRegistration2D::Evaluate()
 {
-#ifndef HAS_TBB
+//#ifndef HAS_TBB
   int i, j, t;
-#endif
+//#endif
 
   // Pointer to reference data
   irtkGreyPixel *ptr2target;
@@ -110,10 +110,10 @@ double irtkImageRigidRegistration2D::Evaluate()
   // Pointer to voxels in target image
   ptr2target = _target->GetPointerToVoxels();
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   irtkMultiThreadedImageRigidRegistrationEvaluate2D evaluate(this);
   parallel_reduce(blocked_range<int>(0, _target->GetY(), 20), evaluate);
-#else
+#else*/
 
    for (t = 0; t < _target->GetT(); t++) {
 
@@ -144,7 +144,7 @@ double irtkImageRigidRegistration2D::Evaluate()
       }
   }
 
-#endif
+//#endif
 
   // Invert transformation
   //((irtkRigidTransformation *)_transformation)->Invert();

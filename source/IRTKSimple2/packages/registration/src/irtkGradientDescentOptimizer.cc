@@ -48,7 +48,7 @@ double irtkGradientDescentOptimizer::Run()
       _Transformation->Put(i, _Transformation->Get(i) + _StepSize * dx[i]);
     }
     similarity = _Registration->Evaluate();
-    if (similarity > new_similarity + _Epsilon) cout << similarity << endl;
+//    if (similarity > new_similarity + _Epsilon) cout << similarity << endl;
   } while (similarity > new_similarity + _Epsilon);
 
   // Last step was no improvement, so back track

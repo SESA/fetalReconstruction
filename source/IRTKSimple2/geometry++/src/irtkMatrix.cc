@@ -164,7 +164,7 @@ irtkMatrix& irtkMatrix::operator-=(const irtkMatrix& m)
         }
 
 irtkMatrix& irtkMatrix::operator+=(const irtkMatrix& m)
-        {
+{
   int i, j;
 
   if ((_rows != m._rows) || (_cols != m._cols)) {
@@ -177,13 +177,13 @@ irtkMatrix& irtkMatrix::operator+=(const irtkMatrix& m)
     }
   }
   return *this;
-        }
+}
 
 irtkMatrix& irtkMatrix::operator*=(const irtkMatrix& m)
-        {
+{
   *this = *this * m;
   return *this;
-        }
+}
 
 irtkMatrix  irtkMatrix::operator- (const irtkMatrix& m)
 {
@@ -474,22 +474,22 @@ irtkMatrix FrechetMean (irtkMatrix *matrices, double *weights, int number, int i
 }
 
 irtkMatrix irtkMatrix::operator~ (void)
-        {
+{
   irtkMatrix m;
 
   m = *this;
   m.Transpose();
   return m;
-        }
+}
 
 irtkMatrix irtkMatrix::operator! (void)
-        {
+{
   irtkMatrix m;
 
   m = *this;
   m.Invert();
   return m;
-        }
+}
 
 double irtkMatrix::Det() const
 {
@@ -954,9 +954,9 @@ ostream& operator<< (ostream& os, const irtkMatrix &m)
     }
   }
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)data, (char *)data, m._rows*m._cols);
-#endif
+//#ifndef WORDS_BIGENDIAN
+//  swap64((char *)data, (char *)data, m._rows*m._cols);
+//#endif
 
   // Write binary data
   os.write((char *)data, m._rows*m._cols*sizeof(double));
@@ -998,9 +998,9 @@ istream& operator>> (istream& is, irtkMatrix &m)
   // Read binary data
   is.read((char *)data, m._rows*m._cols*sizeof(double));
 
-#ifndef WORDS_BIGENDIAN
-  swap64((char *)data, (char *)data, m._rows*m._cols);
-#endif
+//#ifndef WORDS_BIGENDIAN
+//  swap64((char *)data, (char *)data, m._rows*m._cols);
+//#endif
 
   // Convert data
   index = 0;
@@ -1141,7 +1141,7 @@ void irtkMatrix::GSL2Matrix(gsl_matrix *m)
 }
 
 irtkVector  irtkMatrix::operator* (const irtkVector& v)
-        {
+{
   int i, j;
 
   if (_cols != v.Rows()) {
@@ -1160,6 +1160,6 @@ irtkVector  irtkMatrix::operator* (const irtkVector& v)
   }
 
   return result;
-        }
+}
 
 #endif

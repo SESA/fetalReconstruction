@@ -12,12 +12,12 @@
 
 #include <irtkTransformation.h>
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
 #include <tbb/tick_count.h>
-#endif
+#endif*/
 
-class irtkMultiThreadedImageTransformation
+/*class irtkMultiThreadedImageTransformation
 {
 
   /// Time frame to transform
@@ -40,6 +40,7 @@ public:
 
     time = _imagetransformation->_output->ImageToTime(_toutput);
 
+    //actually parallel for loop - TODO blocking?
     for (k = r.begin(); k != r.end(); k++) {
 
       for (j = 0; j < _imagetransformation->_output->GetY(); j++) {
@@ -78,6 +79,7 @@ public:
 };
 
 #endif
+*/
 
 irtkImageTransformation::irtkImageTransformation()
 {
@@ -201,11 +203,11 @@ void irtkImageTransformation::Run()
 {
   int i, j, k, l;
 
-#ifdef HAS_TBB
-  double t;
-#else
+//#ifdef HAS_TBB
+//  double t;
+//#else
   double x, y, z, t;
-#endif
+//#endif
 
   // Check inputs and outputs
   if (_input == NULL) {
@@ -242,12 +244,12 @@ void irtkImageTransformation::Run()
   _interpolator->SetInput(_input);
   _interpolator->Initialize();
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   task_scheduler_init init(tbb_no_threads);
 #if USE_TIMING
   tick_count t_start = tick_count::now();
 #endif
-#endif
+#endif*/
 
   // Calculate transformation
   for (l = 0; l < _output->GetT(); l++) {
@@ -255,9 +257,9 @@ void irtkImageTransformation::Run()
 
     if ((t >= 0) && (t < this->_input->GetT())) {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
       parallel_for(blocked_range<int>(0, _output->GetZ(), 1), irtkMultiThreadedImageTransformation(this, l, t));
-#else
+#else*/
 
       double time = this->_output->ImageToTime(l);
 
@@ -298,7 +300,7 @@ void irtkImageTransformation::Run()
         }
       }
 
-#endif
+//#endif
 
     } else {
       for (k = 0; k < this->_output->GetZ(); k++) {
@@ -312,14 +314,14 @@ void irtkImageTransformation::Run()
   }
 
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
   tick_count t_end = tick_count::now();
   if (tbb_debug) cout << "irtkImageTransformation = " << (t_end - t_start).seconds() << " secs." << endl;
 #endif
   init.terminate();
 
-#endif
+#endif*/
 
 }
 

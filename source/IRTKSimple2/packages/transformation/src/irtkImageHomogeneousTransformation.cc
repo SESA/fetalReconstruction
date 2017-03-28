@@ -14,7 +14,7 @@
 
 #include <irtkHomogeneousTransformationIterator.h>
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
 #include <tbb/tick_count.h>
 #endif
@@ -70,7 +70,7 @@ public:
 };
 
 #endif
-
+*/
 irtkImageHomogeneousTransformation::irtkImageHomogeneousTransformation() : irtkImageTransformation()
 {}
 
@@ -144,21 +144,21 @@ void irtkImageHomogeneousTransformation::Run()
   irtkHomogeneousTransformationIterator
   iterator((irtkHomogeneousTransformation *)this->_transformation);
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   task_scheduler_init init(tbb_no_threads);
 #if USE_TIMING
   tick_count t_start = tick_count::now();
 #endif
-#endif
+#endif*/
 
   // Loop over all voxels in the output (reference) volume
   for (l = 0; l < this->_output->GetT(); l++) {
     int t = round(this->_input->TimeToImage(this->_output->ImageToTime(l)));
     if ((t >= 0) && (t < this->_input->GetT())) {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
       parallel_for(blocked_range<int>(0, this->_output->GetZ(), 1), irtkMultiThreadedImageHomogeneousTransformation(this, l, t));
-#else
+#else*/
 
     	// Initialize iterator
       iterator.Initialize(this->_output, this->_input);
@@ -184,7 +184,7 @@ void irtkImageHomogeneousTransformation::Run()
         iterator.NextZ();
       }
 
-#endif
+//#endif
 
     } else {
       for (k = 0; k < this->_output->GetZ(); k++) {
@@ -197,7 +197,7 @@ void irtkImageHomogeneousTransformation::Run()
     }
   }
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
   tick_count t_end = tick_count::now();
   if (tbb_debug) cout << "irtkImageHomogeneousTransformation = " << (t_end - t_start).seconds() << " secs." << endl;
@@ -205,7 +205,7 @@ void irtkImageHomogeneousTransformation::Run()
   init.terminate();
 
 #endif
-
+*/
   // Invert transformation
   if (this->_Invert == true) ((irtkHomogeneousTransformation *)this->_transformation)->Invert();
 }

@@ -14,7 +14,7 @@
 
 #include <irtkHomogeneousTransformationIterator.h>
 
-#include <irtkMultiThreadedImageRigidRegistration.h>
+//#include <irtkMultiThreadedImageRigidRegistration.h>
 
 void irtkImageRigidRegistration::GuessParameter()
 {
@@ -284,9 +284,9 @@ void irtkImageRigidRegistration::Finalize()
 double irtkImageRigidRegistration::Evaluate()
 {
 
-#ifndef HAS_TBB
+//#ifndef HAS_TBB
   int i, j, k, t;
-#endif
+//#endif
 
   // Pointer to reference data
   irtkGreyPixel *ptr2target;
@@ -315,10 +315,10 @@ double irtkImageRigidRegistration::Evaluate()
   // transform reduce in thrust
 
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   irtkMultiThreadedImageRigidRegistrationEvaluate evaluate(this);
   parallel_reduce(blocked_range<int>(0, _target->GetZ(), 20), evaluate);
-#else
+#else*/
 
   for (t = 0; t < _target->GetT(); t++) {
 
@@ -353,7 +353,7 @@ double irtkImageRigidRegistration::Evaluate()
     }
   }
 
-#endif
+//#endif
 
 
   // Invert transformation

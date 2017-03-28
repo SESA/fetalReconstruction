@@ -169,7 +169,7 @@ void irtkFileNIFTIToImage::SetInput(const char *filename)
 
 void irtkFileNIFTIToImage::ReadHeader()
 {
-  int i, order;
+  int i;
   float det;
   mat44 mat_44, mat_inv_44;
   mat33 mat_33;
@@ -289,6 +289,7 @@ void irtkFileNIFTIToImage::ReadHeader()
   }
 
   // Get left/right order (no check for inconsistency between qform/sform since only one is used)
+  int order;
   mat_33 = nifti_mat44_to_mat33(mat_44);
   det = nifti_mat33_determ(mat_33);
   // det = mat33_determ(mat_33);

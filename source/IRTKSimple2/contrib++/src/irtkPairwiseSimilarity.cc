@@ -12,12 +12,12 @@
 #include <sstream>
 #include <irtkPairwiseSimilarity.h>
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #include "tbb/task_scheduler_init.h"
 #include "tbb/parallel_for.h"
-#include "tbb/blocked_range.h"
+#include "tbb/blocked_range.h"*/
 
-using namespace tbb;
+//using namespace tbb;
 
 class MultiThreadedSimilarity {
 
@@ -152,7 +152,6 @@ public:
 					i2Ptr++;
 				}
 				cout << "Vals: " << valCtr << endl;
-				int noValue = 0;
 				for(int r = 0; r < _nrRegions; r++) {
 					double results = -1;
 
@@ -178,7 +177,7 @@ public:
 	}
 };
 
-#endif
+//#endif
 
 irtkPairwiseSimilarity::irtkPairwiseSimilarity()
 {
@@ -444,7 +443,7 @@ void irtkPairwiseSimilarity::GetSimilarities()
 {
 	for (int i = 0; i < _nrRows; i++) {
 		cout << i << ": ";
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 //			cout << "Nr of Regions: " << _nrRegions << endl;
 		task_scheduler_init init;
 		MultiThreadedSimilarity evaluate(_useMasks , _images, _regions,i, _results, _nrRegions,_similarityType, _twoSets, _nrRows,_singleRegionMask,_padding);
@@ -466,7 +465,7 @@ void irtkPairwiseSimilarity::GetSimilarities()
 		}
 		else
 		parallel_for(blocked_range<int>(1, _nrRows, int(blocks)), evaluate);
-#else
+    #else*/
 		for (int j = 0; j < _nrRows + _nrCols; j++) {
 			if (j > i || _twoSets) {
 				//	cout << _twoSets << " " << j << " " << _nrRows << " " << _nrSubjects << endl;
@@ -602,7 +601,7 @@ void irtkPairwiseSimilarity::GetSimilarities()
 			}
 		}
 
-#endif
+//#endif
 	}
 
 }

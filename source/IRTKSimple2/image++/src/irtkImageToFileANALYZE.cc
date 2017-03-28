@@ -58,15 +58,15 @@ const char *irtkImageToFileANALYZE::NameOfClass()
 
 void irtkImageToFileANALYZE::Initialize()
 {
-  int x, y, z;
+//  int x, y, z;
   irtkCofstream to;
   double min, max;
   double xsize, ysize, zsize;
   irtkANALYZEHeader hdr;
 
-  x = this->_input->GetX();
-  y = this->_input->GetY();
-  z = this->_input->GetZ();
+  //x = this->_input->GetX();
+  // y = this->_input->GetY();
+  //z = this->_input->GetZ();
   this->_input->GetPixelSize(&xsize, &ysize, &zsize);
   this->_input->GetMinMaxAsDouble(&min, &max);
 

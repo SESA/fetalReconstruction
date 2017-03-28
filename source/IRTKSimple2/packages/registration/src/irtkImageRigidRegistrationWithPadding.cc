@@ -16,7 +16,7 @@
 
 #include <irtkImageRigidRegistrationWithPadding.h>
 
-#include <irtkMultiThreadedImageRigidRegistrationWithPadding.h>
+//#include <irtkMultiThreadedImageRigidRegistrationWithPadding.h>
 
 void irtkImageRigidRegistrationWithPadding::GuessParameter()
 {

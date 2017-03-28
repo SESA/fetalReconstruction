@@ -20,11 +20,11 @@
 
 #define HISTORY
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
 tbb::concurrent_bounded_queue<irtkSimilarityMetric *> sim_queue;
 
-#endif
+#endif*/
 
 irtkImageRegistration::irtkImageRegistration()
 {
@@ -120,28 +120,28 @@ void irtkImageRegistration::Initialize(int level)
 
   // Blur images if necessary
   if (_TargetBlurring[level] > 0) {
-    cout << "Blurring target ... ";
+//    cout << "Blurring target ... ";
     irtkGaussianBlurringWithPadding<irtkGreyPixel> blurring(_TargetBlurring[level], _TargetPadding);
     blurring.SetInput (_target);
     blurring.SetOutput(_target);
     blurring.Run();
-    cout << "done" << endl;
+//    cout << "done" << endl;
   }
 
   if (_SourceBlurring[level] > 0) {
-    cout << "Blurring source ... ";
+//    cout << "Blurring source ... ";
     irtkGaussianBlurring<irtkGreyPixel> blurring(_SourceBlurring[level]);
     blurring.SetInput (_source);
     blurring.SetOutput(_source);
     blurring.Run();
-    cout << "done" << endl;
+//    cout << "done" << endl;
   }
 
   _target->GetPixelSize(&dx, &dy, &dz);
   temp = fabs(_TargetResolution[0][0]-dx) + fabs(_TargetResolution[0][1]-dy) + fabs(_TargetResolution[0][2]-dz);
 
   if (level > 0 || temp > 0.000001) {
-    cout << "Resampling target ... ";
+  // cout << "Resampling target ... ";
     // Create resampling filter
     irtkResamplingWithPadding<irtkGreyPixel> resample(_TargetResolution[level][0],
         _TargetResolution[level][1],
@@ -150,14 +150,14 @@ void irtkImageRegistration::Initialize(int level)
     resample.SetInput (_target);
     resample.SetOutput(_target);
     resample.Run();
-    cout << "done" << endl;
+    //cout << "done" << endl;
   }
 
   _source->GetPixelSize(&dx, &dy, &dz);
   temp = fabs(_SourceResolution[0][0]-dx) + fabs(_SourceResolution[0][1]-dy) + fabs(_SourceResolution[0][2]-dz);
 
   if (level > 0 || temp > 0.000001) {
-    cout << "Resampling source ... ";
+  // cout << "Resampling source ... ";
     // Create resampling filter
     irtkResamplingWithPadding<irtkGreyPixel> resample(_SourceResolution[level][0],
         _SourceResolution[level][1],
@@ -166,7 +166,7 @@ void irtkImageRegistration::Initialize(int level)
     resample.SetInput (_source);
     resample.SetOutput(_source);
     resample.Run();
-    cout << "done" << endl;
+  // cout << "done" << endl;
   }
 
   // Find out the min and max values in target image, ignoring padding
@@ -316,16 +316,19 @@ void irtkImageRegistration::Initialize(int level)
   case LC:
     _metric = new irtkLabelConsistencySimilarityMetric;
     break;
-#if 0
+//#if 0
   case K:
     // Rescale images by an integer factor if necessary
-    target_nbins = irtkCalculateNumberOfBins(_target, _NumberOfBins,
+  /*  target_nbins = irtkCalculateNumberOfBins(_target, _NumberOfBins,
                    target_min, target_max);
     source_nbins = irtkCalculateNumberOfBins(_source, _NumberOfBins,
                    source_min, source_max);
-    _metric = new irtkKappaSimilarityMetric(target_nbins, source_nbins);
+    _metric = new irtkKappaSimilarityMetric(target_nbins, source_nbins);*/
+  case NGD:
+  case NGP:
+  case NGS:
     break;
-#endif
+//#endif
   case ML:
     // Rescale images by an integer factor if necessary
 /*    _metric = new irtkMLSimilarityMetric(classification);
@@ -371,16 +374,16 @@ void irtkImageRegistration::Initialize(int level)
   _optimizer->SetRegistration(this);
 
   // Print some debugging information
-  cout << "Target image (reference)" << endl;
+  //cout << "Target image (reference)" << endl;
   _target->Print();
-  cout << "Range is from " << target_min << " to " << target_max << endl;
+  //cout << "Range is from " << target_min << " to " << target_max << endl;
 
-  cout << "Source image (transform)" << endl;
+  //cout << "Source image (transform)" << endl;
   _source->Print();
-  cout << "Range is from " << source_min << " to " << source_max << endl;
+  //cout << "Range is from " << source_min << " to " << source_max << endl;
 
   // Print initial transformation
-  cout << "Initial transformation for level = " << level+1 << endl;;
+  //cout << "Initial transformation for level = " << level+1 << endl;;
   _transformation->Print();
 
 }
@@ -390,19 +393,19 @@ void irtkImageRegistration::Finalize()
 void irtkImageRegistration::Finalize(int level)
 {
   // Print final transformation
-    cout << "Final transformation for level = " << level+1 << endl;;
+    //cout << "Final transformation for level = " << level+1 << endl;;
     _transformation->Print();
     // Swap source and target back with temp space copies (see Initialize)
     swap(tmp_target, _target);
     swap(tmp_source, _source);
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   irtkSimilarityMetric *metric;
   while (sim_queue.size() > 0) {
     sim_queue.pop(metric);
     delete metric;
   }
-#endif
+#endif*/
 
   delete tmp_target;
   delete tmp_source;
@@ -446,13 +449,13 @@ void irtkImageRegistration::Run()
     step = _LengthOfSteps[level];
 
     // Print resolution level
-    cout << "Resolution level no. " << level+1 << " (step sizes ";
-    cout << step << " to " << step / pow(2.0, static_cast<double>(_NumberOfSteps[level]-1)) << ")\n";
+    //cout << "Resolution level no. " << level+1 << " (step sizes ";
+    //cout << step << " to " << step / pow(2.0, static_cast<double>(_NumberOfSteps[level]-1)) << ")\n";
 
     // Initial Delta
     delta = _Delta[level];
-    cout << "Delta values : " << delta << " to ";
-    cout << delta / pow(2.0, static_cast<double>(_NumberOfSteps[level]-1)) << "\n";
+    //cout << "Delta values : " << delta << " to ";
+    //cout << delta / pow(2.0, static_cast<double>(_NumberOfSteps[level]-1)) << "\n";
 
 #ifdef HISTORY
     history->Clear();
@@ -467,18 +470,18 @@ void irtkImageRegistration::Run()
     sprintf(buffer, "target_%d.nii.gz", level);
     if (_DebugFlag == true) _target->Write(buffer);
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
     task_scheduler_init init(tbb_no_threads);
 #if USE_TIMING
     tick_count t_start = tick_count::now();
 #endif
-#endif
+#endif*/
 
     // Run the registration filter at this resolution
     for (i = 0; i < _NumberOfSteps[level]; i++) {
       for (j = 0; j < _NumberOfIterations[level]; j++) {
-        cout << "Iteration = " << j + 1 << " (out of " << _NumberOfIterations[level];
-        cout << "), step size = " << step << endl;
+        //cout << "Iteration = " << j + 1 << " (out of " << _NumberOfIterations[level];
+        //cout << "), step size = " << step << endl;
 
         // Optimize at lowest level of resolution
         _optimizer->SetStepSize(step);
@@ -501,14 +504,14 @@ void irtkImageRegistration::Run()
       delta = delta / 2.0;
     }
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
     tick_count t_end = tick_count::now();
     if (tbb_debug) cout << this->NameOfClass() << " = " << (t_end - t_start).seconds() << " secs." << endl;
 #endif
     init.terminate();
 
-#endif
+#endif*/
 
     // Do the final cleaning up for this level
     this->Finalize(level);
@@ -764,27 +767,27 @@ bool irtkImageRegistration::Read(char *buffer1, char *buffer2, int &level)
   if (strstr(buffer1, "Interpolation mode") != NULL) {
     if (strstr(buffer2, "NN") != NULL) {
       this->_InterpolationMode = Interpolation_NN;
-      cout << "Interpolation Mode is ... NN" << endl;
+      //cout << "Interpolation Mode is ... NN" << endl;
       ok = true;
     } else {
       if (strstr(buffer2, "Linear") != NULL) {
         this->_InterpolationMode = Interpolation_Linear;
-        cout << "Interpolation Mode is ... Linear" << endl;
+        //cout << "Interpolation Mode is ... Linear" << endl;
         ok = true;
       } else {
         if (strstr(buffer2, "CSpline") != NULL) {
           this->_InterpolationMode = Interpolation_CSpline;
-          cout << "Interpolation Mode is ... CSpline" << endl;
+          // cout << "Interpolation Mode is ... CSpline" << endl;
           ok = true;
         } else {
           if (strstr(buffer2, "BSpline") != NULL) {
             this->_InterpolationMode = Interpolation_BSpline;
-            cout << "Interpolation Mode is ... BSpline" << endl;
+            //cout << "Interpolation Mode is ... BSpline" << endl;
             ok = true;
           } else {
             if (strstr(buffer2, "Sinc") != NULL) {
               this->_InterpolationMode = Interpolation_Sinc;
-              cout << "Interpolation Mode is ... Sinc" << endl;
+              //cout << "Interpolation Mode is ... Sinc" << endl;
               ok = true;
             }
           }
@@ -868,6 +871,10 @@ void irtkImageRegistration::Write(ostream &to)
     break;
   case ML:
     to << "Similarity measure                = ML" << endl;
+    break;
+  case NGD:
+  case NGS:
+  case NGP:
     break;
   }
 

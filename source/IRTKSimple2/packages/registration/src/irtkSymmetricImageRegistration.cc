@@ -365,6 +365,8 @@ void irtkSymmetricImageRegistration::Initialize(int level)
 /*      _metric1 = new irtkMLSimilarityMetric(classification);
       _metric2 = new irtkMLSimilarityMetric(classification);*/
       break;
+  default:
+      break;
   }
 
   // Setup the interpolator for the source image
@@ -900,6 +902,8 @@ void irtkSymmetricImageRegistration::Write(ostream &to)
     case ML:
       to << "Similarity measure                = ML" << endl;
       break;
+  default:
+      break;
   }
 
   switch (this->_InterpolationMode) {
@@ -945,6 +949,8 @@ void irtkSymmetricImageRegistration::Write(ostream &to)
       break;
     case ClosedForm:
       to << "Optimization method               = ClosedForm" << endl;
+      break;
+    default:
       break;
   }
 

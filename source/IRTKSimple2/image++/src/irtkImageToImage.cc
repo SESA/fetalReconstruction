@@ -14,7 +14,7 @@
 
 #include <irtkImageToImage.h>
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
 #include <tbb/tick_count.h>
 #endif
@@ -47,7 +47,7 @@ public:
   }
 };
 
-#endif
+#endif*/
 
 template <class VoxelType> irtkImageToImage<VoxelType>::irtkImageToImage()
 {
@@ -168,28 +168,28 @@ template <class VoxelType> double irtkImageToImage<VoxelType>::Run(int, int, int
 
 template <class VoxelType> void irtkImageToImage<VoxelType>::Run()
 {
-#ifdef HAS_TBB
-  int t;
-#else
+//#ifdef HAS_TBB
+    //int t;
+//#else
   int x, y, z, t;
-#endif
+//#endif
 
   // Do the initial set up
   this->Initialize();
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
   task_scheduler_init init(tbb_no_threads);
 #if USE_TIMING
   tick_count t_start = tick_count::now();
 #endif
-#endif
+#endif*/
 
   // Calculate
   for (t = 0; t < _input->GetT(); t++) {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
     parallel_for(blocked_range<int>(0, this->_output->GetZ(), 1), irtkMultiThreadedImageToImage<VoxelType>(this, t));
-#else
+    #else*/
 
     for (z = 0; z < _input->GetZ(); z++) {
       for (y = 0; y < _input->GetY(); y++) {
@@ -199,18 +199,18 @@ template <class VoxelType> void irtkImageToImage<VoxelType>::Run()
       }
     }
 
-#endif
+//#endif
 
   }
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 #if USE_TIMING
   tick_count t_end = tick_count::now();
   if (tbb_debug) cout << this->NameOfClass() << " = " << (t_end - t_start).seconds() << " secs." << endl;
 #endif
   init.terminate();
 
-#endif
+  #endif*/
 
   // Do the final cleaning up
   this->Finalize();

@@ -76,8 +76,8 @@ void irtkPadding(irtkRealImage &image, irtkRealPixel padding, irtkGreyImage *res
     if (n > 0) {
 
         // Print some padding information
-        cout << "Padding value = " << padding << endl;
-        cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
+//        cout << "Padding value = " << padding << endl;
+//        cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
 
         // Calculate distances
         for (t = 0; t < image.GetT(); t++) {
@@ -128,8 +128,8 @@ void irtkPadding(irtkGreyImage &image, irtkGreyPixel padding)
     if (n > 0) {
 
         // Print some padding information
-        cout << "Padding value = " << padding << endl;
-        cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
+//      cout << "Padding value = " << padding << endl;
+//      cout << "Padding ratio = " << 100*double(n)/(double(m)+double(n)) << " %" << endl;
 
         // Calculate distances
         for (t = 0; t < image.GetT(); t++) {
@@ -336,7 +336,7 @@ void irtkPadding(irtkGreyImage **image, irtkGreyPixel padding, irtkBSplineFreeFo
             }
         }
     }
-    cout << "Number of CP padded: " << number << " out of " << ffd->NumberOfDOFs() << endl;
+//    cout << "Number of CP padded: " << number << " out of " << ffd->NumberOfDOFs() << endl;
 }
 
 void irtkPadding(irtkGreyImage *image, irtkGreyPixel padding, irtkBSplineFreeFormTransformationPeriodic *ffd, int numberOfImages, double *time)
@@ -400,7 +400,7 @@ void irtkPadding(irtkGreyImage *image, irtkGreyPixel padding, irtkBSplineFreeFor
             }
         }
     }
-    cout << "Number of CP padded: " << number << " out of " << ffd->NumberOfDOFs() << endl;
+//    cout << "Number of CP padded: " << number << " out of " << ffd->NumberOfDOFs() << endl;
 }
 #endif
 double GuessResolution(double xsize, double ysize, double zsize)
@@ -453,11 +453,11 @@ int irtkCalculateNumberOfBins(irtkGreyImage *image, int maxbin, int min, int max
         nbins = int(ceil(range/(double)width));
 
         // Print out number of bins
-        cout << "Using " << nbins << " out of " << maxbin << " bin(s) with width "
-            << width << endl;
+//        cout << "Using " << nbins << " out of " << maxbin << " bin(s) with width "
+//          << width << endl;
     } else {
         // Print out number of bins
-        cout << "Using " << nbins << " bin(s) with width " 	 << width << endl;
+//        cout << "Using " << nbins << " bin(s) with width " 	 << width << endl;
     }
 
     // Rescale intensities to the number of bins
