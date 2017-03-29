@@ -64,25 +64,25 @@ irtkGenericImage<VoxelType>::irtkGenericImage(const irtkImageAttributes &attr)
     this->Initialize(attr);
 }
 
-  template <class VoxelType>
+template <class VoxelType>
 irtkGenericImage<VoxelType>::irtkGenericImage(const irtkGenericImage &image)
   : irtkBaseImage() {
-    int i, n;
-    VoxelType *ptr1, *ptr2;
+  int i, n;
+  VoxelType *ptr1, *ptr2;
 
-    // Initialize data
-    _matrix = NULL;
+  // Initialize data
+  _matrix = NULL;
 
-    // Initialize rest of class
-    this->Initialize(image._attr);
+  // Initialize rest of class
+  this->Initialize(image._attr);
 
-    n = this->GetNumberOfVoxels();
-    ptr1 = this->GetPointerToVoxels();
-    ptr2 = image.GetPointerToVoxels();
-    for (i = 0; i < n; i++) {
-      ptr1[i] = ptr2[i];
-    }
+  n = this->GetNumberOfVoxels();
+  ptr1 = this->GetPointerToVoxels();
+  ptr2 = image.GetPointerToVoxels();
+  for (i = 0; i < n; i++) {
+    ptr1[i] = ptr2[i];
   }
+}
 
 template <class VoxelType>
 template <class VoxelType2>
@@ -199,62 +199,62 @@ void irtkGenericImage<VoxelType>::Read(const char *filename) {
   // Convert image
   switch (reader->GetDataType()) {
 
-    case IRTK_VOXEL_CHAR: {
-                            *this = *(dynamic_cast<irtkGenericImage<char> *>(image));
-                          } break;
+  case IRTK_VOXEL_CHAR: {
+    *this = *(dynamic_cast<irtkGenericImage<char> *>(image));
+  } break;
 
-    case IRTK_VOXEL_UNSIGNED_CHAR: {
-                                     *this = *(dynamic_cast<irtkGenericImage<unsigned char> *>(image));
-                                   } break;
+  case IRTK_VOXEL_UNSIGNED_CHAR: {
+    *this = *(dynamic_cast<irtkGenericImage<unsigned char> *>(image));
+  } break;
 
-    case IRTK_VOXEL_SHORT: {
-                             *this = *(dynamic_cast<irtkGenericImage<short> *>(image));
-                           } break;
+  case IRTK_VOXEL_SHORT: {
+    *this = *(dynamic_cast<irtkGenericImage<short> *>(image));
+  } break;
 
-    case IRTK_VOXEL_UNSIGNED_SHORT: {
-                                      *this = *(dynamic_cast<irtkGenericImage<unsigned short> *>(image));
-                                    } break;
+  case IRTK_VOXEL_UNSIGNED_SHORT: {
+    *this = *(dynamic_cast<irtkGenericImage<unsigned short> *>(image));
+  } break;
 
-    case IRTK_VOXEL_INT: {
-                           *this = *(dynamic_cast<irtkGenericImage<int> *>(image));
-                         } break;
+  case IRTK_VOXEL_INT: {
+    *this = *(dynamic_cast<irtkGenericImage<int> *>(image));
+  } break;
 
-    case IRTK_VOXEL_UNSIGNED_INT: {
-                                    *this = *(dynamic_cast<irtkGenericImage<unsigned int> *>(image));
-                                  } break;
+  case IRTK_VOXEL_UNSIGNED_INT: {
+    *this = *(dynamic_cast<irtkGenericImage<unsigned int> *>(image));
+  } break;
 
-    case IRTK_VOXEL_FLOAT: {
-                             *this = *(dynamic_cast<irtkGenericImage<float> *>(image));
-                           } break;
+  case IRTK_VOXEL_FLOAT: {
+    *this = *(dynamic_cast<irtkGenericImage<float> *>(image));
+  } break;
 
-    case IRTK_VOXEL_DOUBLE: {
-                              *this = *(dynamic_cast<irtkGenericImage<double> *>(image));
-                            } break;
+  case IRTK_VOXEL_DOUBLE: {
+    *this = *(dynamic_cast<irtkGenericImage<double> *>(image));
+  } break;
 
-    default:
-                            cout << "irtkGenericImage::GetOutput: Unknown voxel type" << endl;
+  default:
+    cout << "irtkGenericImage::GetOutput: Unknown voxel type" << endl;
   }
 
   if (reader->GetSlope() != 0) {
     switch (this->GetScalarType()) {
 
-      case IRTK_VOXEL_FLOAT: {
-                               *this *= static_cast<float>(reader->GetSlope());
-                               *this += static_cast<float>(reader->GetIntercept());
-                             }
-                             break;
+    case IRTK_VOXEL_FLOAT: {
+      *this *= static_cast<float>(reader->GetSlope());
+      *this += static_cast<float>(reader->GetIntercept());
+    } break;
 
-      case IRTK_VOXEL_DOUBLE: {
-                                *this *= static_cast<double>(reader->GetSlope());
-                                *this += static_cast<double>(reader->GetIntercept());
-                              }
-                              break;
+    case IRTK_VOXEL_DOUBLE: {
+      *this *= static_cast<double>(reader->GetSlope());
+      *this += static_cast<double>(reader->GetIntercept());
+    } break;
 
-      default:
-                              if ((reader->GetSlope() != 1) || (reader->GetIntercept() != 0)) {
-                                cerr << this->NameOfClass() << "::Read: Ignore slope and intercept, use irtkGenericImage<float> or " << endl;
-                                cerr << "irtkGenericImage<double> instead" << endl;
-                              }
+    default:
+      if ((reader->GetSlope() != 1) || (reader->GetIntercept() != 0)) {
+        cerr << this->NameOfClass() << "::Read: Ignore slope and intercept, "
+                                       "use irtkGenericImage<float> or "
+             << endl;
+        cerr << "irtkGenericImage<double> instead" << endl;
+      }
     }
   }
 
@@ -327,10 +327,10 @@ VoxelType irtkGenericImage<VoxelType>::GetAverage(int toggle) const {
     for (i = 0; i < n; i++) {
       if (toggle == 1) {
         if (*ptr > 0) {
-          average += (float)((VoxelType)*ptr)/(float)m;
+          average += (float)((VoxelType)*ptr) / (float)m;
         }
       } else {
-        average += (float)((VoxelType)*ptr)/(float)n;
+        average += (float)((VoxelType)*ptr) / (float)n;
       }
       ptr++;
     }
@@ -375,8 +375,8 @@ void irtkGenericImage<VoxelType>::GetMaxPosition(irtkPoint& p,
   z = round(p._z);
   k = round(p._z);
   ptr = this->GetPointerToVoxels();
-  for (j = round(p._y) - ds; j < round(p._y) +ds + 1; j++) {
-    for (i = round(p._x) - ds; i < round(p._x)+ds + 1; i++) {
+  for (j = round(p._y) - ds; j < round(p._y) + ds + 1; j++) {
+    for (i = round(p._x) - ds; i < round(p._x) + ds + 1; i++) {
       // Initialize pixels
       if (max < *ptr) {
         max = *ptr;
@@ -485,8 +485,7 @@ void irtkGenericImage<VoxelType>::PutMinMax(VoxelType min, VoxelType max) {
   ptr = this->GetPointerToVoxels();
   for (i = 0; i < n; i++) {
     ptr[i] = VoxelType(
-        ((ptr[i] - min_val) / double(max_val - min_val)) *
-        (max - min) + min);
+        ((ptr[i] - min_val) / double(max_val - min_val)) * (max - min) + min);
   }
 }
 
