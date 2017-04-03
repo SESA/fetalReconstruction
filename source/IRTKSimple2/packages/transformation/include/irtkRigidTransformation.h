@@ -26,8 +26,7 @@
  *
  */
 
-class irtkRigidTransformation : public irtkHomogeneousTransformation
-{
+class irtkRigidTransformation : public irtkHomogeneousTransformation {
 
 protected:
 
@@ -92,37 +91,37 @@ public:
   virtual void Reset();
 
   /// Puts translation along the x-axis (transformation matrix is updated)
-  void   PutTranslationX(double);
+  void PutTranslationX(double);
 
   /// Gets translation along the x-axis
   virtual double GetTranslationX();
 
   /// Puts translation along the y-axis (transformation matrix is updated)
-  virtual void   PutTranslationY(double);
+  virtual void PutTranslationY(double);
 
   /// Gets translation along the y-axis
   virtual double GetTranslationY();
 
   /// Puts translation along the z-axis (transformation matrix is updated)
-  virtual void   PutTranslationZ(double);
+  virtual void PutTranslationZ(double);
 
   /// Gets translation along the z-axis
   virtual double GetTranslationZ();
 
   /// Puts rotation angle around the x-axis (transformation matrix is updated)
-  virtual void   PutRotationX(double);
+  virtual void PutRotationX(double);
 
   /// Gets rotation angle around the x-axis
   virtual double GetRotationX();
 
   /// Puts rotation angle around the y-axis (transformation matrix is updated)
-  virtual void   PutRotationY(double);
+  virtual void PutRotationY(double);
 
   /// Gets rotation angle around the y-axis
   virtual double GetRotationY();
 
   /// Puts rotation angle around the z-axis (transformation matrix is updated)
-  virtual void   PutRotationZ(double);
+  virtual void PutRotationZ(double);
 
   /// Gets rotation angle around the z-axis
   virtual double GetRotationZ();
@@ -131,16 +130,17 @@ public:
   virtual int NumberOfDOFs() const;
 
   /// Puts a transformation parameter (transformation matrix is updated)
-  virtual void   Put(int, double);
+  virtual void Put(int, double);
 
   /// Gets a transformation parameter
   virtual double Get(int) const;
 
   /// Transforms a point by the rotation part of the rigid transformation.
-  virtual void Rotate(double& x, double& y, double& z);
+  virtual void Rotate(double &x, double &y, double &z);
 
-  /// Calculate the Jacobian of the transformation with respect to the transformation parameters
-  virtual void JacobianDOFs(double [3], int, double, double, double, double = 0);
+  /// Calculate the Jacobian of the transformation with respect to the
+  /// transformation parameters
+  virtual void JacobianDOFs(double[3], int, double, double, double, double = 0);
 
   /// Checks whether transformation is an identity mapping
   virtual bool IsIdentity();
@@ -157,16 +157,16 @@ public:
   virtual const char *NameOfClass();
 
   /// Reads a transformation from a file
-  virtual irtkCifstream& Read(irtkCifstream&);
+  virtual irtkCifstream &Read(irtkCifstream&);
 
   /// Writes a transformation to a file
-  virtual irtkCofstream& Write(irtkCofstream&);
+  virtual irtkCofstream &Write(irtkCofstream&);
 
   /// Imports a transformation from a file
-  virtual istream& Import(istream&);
+  virtual istream &Import(istream&);
 
   /// Exports a transformation to a file
-  virtual ostream& Export(ostream&);
+  virtual ostream &Export(ostream&);
 
   /// Puts the transformation matrix (transformation parameters are updated)
   virtual void PutMatrix(const irtkMatrix &);
@@ -178,20 +178,16 @@ public:
   virtual void UpdateParameter();
 };
 
-inline int irtkRigidTransformation::NumberOfDOFs() const
-{
-  return 6;
-}
+inline int irtkRigidTransformation::NumberOfDOFs() const { return 6; }
 
-inline irtkRigidTransformation::irtkRigidTransformation()
-{
+inline irtkRigidTransformation::irtkRigidTransformation() {
   int i;
 
   _tx = _ty = _tz = 0;
   _rx = _ry = _rz = 0;
 
   // Free memory allocated for DOF status by base class
-  delete []_status;
+  delete[] _status;
 
   // Allocate memory for DOF status
   _status = new _Status[this->NumberOfDOFs()];
@@ -205,8 +201,9 @@ inline irtkRigidTransformation::irtkRigidTransformation()
   this->UpdateMatrix();
 }
 
-inline irtkRigidTransformation::irtkRigidTransformation(const irtkRigidTransformation &t) : irtkHomogeneousTransformation(t)
-{
+inline irtkRigidTransformation::irtkRigidTransformation(
+    const irtkRigidTransformation &t)
+    : irtkHomogeneousTransformation(t) {
   int i;
 
   _tx = t._tx;
@@ -217,7 +214,7 @@ inline irtkRigidTransformation::irtkRigidTransformation(const irtkRigidTransform
   _rz = t._rz;
 
   // Free memory allocated for DOF status by base class
-  delete []_status;
+  delete[] _status;
 
   // Allocate memory for DOF status
   _status = new _Status[this->NumberOfDOFs()];
@@ -244,86 +241,58 @@ inline void irtkRigidTransformation::Reset()
   this->UpdateMatrix();
 }
 
-
-inline void irtkRigidTransformation::PutRotationX(double rx)
-{
+inline void irtkRigidTransformation::PutRotationX(double rx) {
   _rx = rx;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetRotationX()
-{
-  return _rx;
-}
+inline double irtkRigidTransformation::GetRotationX() { return _rx; }
 
-inline void irtkRigidTransformation::PutRotationY(double ry)
-{
+inline void irtkRigidTransformation::PutRotationY(double ry) {
   _ry = ry;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetRotationY()
-{
-  return _ry;
-}
+inline double irtkRigidTransformation::GetRotationY() { return _ry; }
 
-inline void irtkRigidTransformation::PutRotationZ(double rz)
-{
+inline void irtkRigidTransformation::PutRotationZ(double rz) {
   _rz = rz;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetRotationZ()
-{
-  return _rz;
-}
+inline double irtkRigidTransformation::GetRotationZ() { return _rz; }
 
-inline void irtkRigidTransformation::PutTranslationX(double tx)
-{
+inline void irtkRigidTransformation::PutTranslationX(double tx) {
   _tx = tx;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetTranslationX()
-{
-  return _tx;
-}
+inline double irtkRigidTransformation::GetTranslationX() { return _tx; }
 
-inline void irtkRigidTransformation::PutTranslationY(double ty)
-{
+inline void irtkRigidTransformation::PutTranslationY(double ty) {
   _ty = ty;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetTranslationY()
-{
-  return _ty;
-}
+inline double irtkRigidTransformation::GetTranslationY() { return _ty; }
 
-inline void irtkRigidTransformation::PutTranslationZ(double tz)
-{
+inline void irtkRigidTransformation::PutTranslationZ(double tz) {
   _tz = tz;
   this->UpdateMatrix();
 }
 
-inline double irtkRigidTransformation::GetTranslationZ()
-{
-  return _tz;
-}
+inline double irtkRigidTransformation::GetTranslationZ() { return _tz; }
 
-inline void irtkRigidTransformation::PutMatrix(const irtkMatrix &matrix)
-{
+inline void irtkRigidTransformation::PutMatrix(const irtkMatrix &matrix) {
   _matrix = matrix;
   this->UpdateParameter();
 }
 
-inline const char *irtkRigidTransformation::NameOfClass()
-{
+inline const char *irtkRigidTransformation::NameOfClass() {
   return "irtkRigidTransformation";
 }
 
-inline void irtkRigidTransformation::SetParameters(double *params)
-{
+inline void irtkRigidTransformation::SetParameters(double *params) {
   _tx = params[TX];
   _ty = params[TY];
   _tz = params[TZ];

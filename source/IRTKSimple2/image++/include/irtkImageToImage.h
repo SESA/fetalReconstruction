@@ -14,11 +14,11 @@
 
 #define _IRTKIMAGETOIMAGE_H
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
 template <class VoxelType> class irtkMultiThreadedImageToImage;
 
-#endif
+#endif*/
 
 /**
  * Abstract base class for any general image to image filter.
@@ -31,11 +31,11 @@ template <class VoxelType> class irtkMultiThreadedImageToImage;
 template <class VoxelType> class irtkImageToImage : public irtkObject
 {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
   friend class irtkMultiThreadedImageToImage<VoxelType>;
 
-#endif
+#endif*/
 
 private:
 

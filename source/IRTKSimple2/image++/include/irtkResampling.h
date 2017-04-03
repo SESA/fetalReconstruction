@@ -18,11 +18,11 @@
 
 #include <irtkImageFunction.h>
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
 template <class VoxelType> class irtkMultiThreadedResampling;
 
-#endif
+#endif*/
 
 /**
  * Class for resampling of images
@@ -36,11 +36,11 @@ template <class VoxelType> class irtkMultiThreadedResampling;
 template <class VoxelType> class irtkResampling : public irtkImageToImage<VoxelType>
 {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
   friend class irtkMultiThreadedResampling<VoxelType>;
 
-#endif
+#endif*/
 
 protected:
 

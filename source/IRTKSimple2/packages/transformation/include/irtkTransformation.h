@@ -58,13 +58,12 @@ class irtkTransformation : public irtkObject
 
 protected:
 
-  /// Status of each degree of freedom (Active or Passive)
-  _Status *_status;
-
   /// Constructor sets _status to NULL on behalf of subclasses
   irtkTransformation();
 
 public:
+  /// Status of each degree of freedom (Active or Passive)
+  _Status *_status;
 
   /** Static constructor. This functions returns a pointer to a concrete
    *  transformation by reading the transformation parameters from a file

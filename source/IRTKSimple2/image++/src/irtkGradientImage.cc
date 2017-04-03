@@ -16,7 +16,7 @@
 
 template <class VoxelType> irtkGradientImage<VoxelType>::irtkGradientImage()
 {
-  _Padding = MIN_GREY;
+  _Padding = (VoxelType)MIN_GREY;
 }
 
 template <class VoxelType> bool irtkGradientImage<VoxelType>::RequiresBuffering(void)

@@ -16,12 +16,12 @@
 
 class irtkEMClassification;
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
 class irtkMultiThreadedImageRigidRegistrationEvaluate;
 class irtkMultiThreadedImageRigidRegistrationEvaluate2D;
 
-#endif
+#endif*/
 
 /**
  * Generic for image registration based on voxel similarity measures.
@@ -38,13 +38,13 @@ class irtkMultiThreadedImageRigidRegistrationEvaluate2D;
 class irtkImageRegistration : public irtkRegistration
 {
 
-#ifdef HAS_TBB
+/*#ifdef HAS_TBB
 
   friend class irtkMultiThreadedImageRigidRegistrationEvaluate;
   friend class irtkMultiThreadedImageRigidRegistrationWithPaddingEvaluate;
   friend class irtkMultiThreadedImageRigidRegistrationEvaluate2D;
 
-#endif
+#endif*/
 
   /// Interface to input file stream
   friend istream& operator>> (istream&, irtkImageRegistration*);
@@ -52,7 +52,7 @@ class irtkImageRegistration : public irtkRegistration
   /// Interface to output file stream
   friend ostream& operator<< (ostream&, const irtkImageRegistration*);
 
-protected:
+public:
 
 	/** First set of input image. This image is denoted as target image and its
 	*  coordinate system defines the frame of reference for the registration.
