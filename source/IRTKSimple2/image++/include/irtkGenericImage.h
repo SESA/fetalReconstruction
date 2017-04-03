@@ -30,8 +30,7 @@
  * be used for images with arbitrary voxel types using templates.
  */
 
-template <typename T> class irtkGenericImage : public irtkBaseImage
-{
+template <typename T> class irtkGenericImage : public irtkBaseImage {
 public:
 
   /// Voxel type
@@ -39,7 +38,6 @@ public:
 
 protected:
 
-  /// Pointer to image data
   VoxelType ****_matrix;
 
 public:
@@ -53,7 +51,7 @@ public:
   /// Constructor for given image size
   irtkGenericImage(int, int, int, int = 1);
 
-  /// Copy constructor for image 
+  /// Copy constructor for image
   irtkGenericImage(const irtkGenericImage &);
 
   /// Constructor for given image attributes
@@ -72,7 +70,7 @@ public:
   void Clear();
 
   /// Read image from file
-  void Read (const char *);
+  void Read(const char *);
 
   /// Write image to file
   void Write(const char *);
@@ -99,8 +97,8 @@ public:
   void PutMinMax(VoxelType, VoxelType);
 
   /// Saturation
-  void Saturate( double q0=0.01, double q1=0.99 );
-  
+  void Saturate(double q0 = 0.01, double q1 = 0.99);
+
   /// Function for pixel access via pointers
   VoxelType *GetPointerToVoxels(int = 0, int = 0, int = 0, int = 0) const;
 
@@ -108,25 +106,27 @@ public:
   int VoxelToIndex(int, int, int, int = 0) const;
 
   /// Function for pixel get access
-  VoxelType   Get(int, int, int, int = 0) const;
+  VoxelType Get(int, int, int, int = 0) const;
 
   /// Function for pixel put access
-  void   Put(int, int, int, VoxelType);
+  void Put(int, int, int, VoxelType);
 
   /// Function for pixel put access
-  void   Put(int, int, int, int, VoxelType);
+  void Put(int, int, int, int, VoxelType);
 
   /// Function for pixel access from via operators
-  VoxelType& operator()(int, int, int, int = 0);
+  VoxelType &operator()(int, int, int, int = 0);
 
   /// Function for image slice get access
   irtkGenericImage GetRegion(int z, int t) const;
 
   /// Function for image slice get access in certain region
-  irtkGenericImage GetRegion(int x1, int y1, int z1, int x2, int y2, int z2) const;
+  irtkGenericImage GetRegion(int x1, int y1, int z1, int x2, int y2,
+      int z2) const;
 
   /// Function for image slice get access in certain region
-  irtkGenericImage GetRegion(int x1, int y1, int z1, int t1, int x2, int y2, int z2, int t2) const;
+  irtkGenericImage GetRegion(int x1, int y1, int z1, int t1, int x2, int y2,
+      int z2, int t2) const;
 
   /// Function for image frame get access
   irtkGenericImage GetFrame(int t) const;
@@ -137,69 +137,70 @@ public:
 
   /// Copy operator for image
   irtkGenericImage<VoxelType>& operator= (const irtkGenericImage &);
-  
+
   /// Copy operator for image
-  template <class TVoxel2> irtkGenericImage<VoxelType>& operator= (const irtkGenericImage<TVoxel2> &);
-  
+  template <class TVoxel2>
+  irtkGenericImage<VoxelType> &operator=(const irtkGenericImage<TVoxel2> &);
+
   /// Addition operator
-  irtkGenericImage  operator+ (const irtkGenericImage &);
+  irtkGenericImage operator+(const irtkGenericImage &);
 
   /// Addition operator (stores result)
-  irtkGenericImage& operator+=(const irtkGenericImage &);
+  irtkGenericImage &operator+=(const irtkGenericImage &);
 
   /// Subtraction operator
-  irtkGenericImage  operator- (const irtkGenericImage &);
+  irtkGenericImage operator-(const irtkGenericImage &);
 
   /// Subtraction operator (stores result)
-  irtkGenericImage& operator-=(const irtkGenericImage &);
+  irtkGenericImage &operator-=(const irtkGenericImage &);
 
   /// Multiplication operator
-  irtkGenericImage  operator* (const irtkGenericImage &);
+  irtkGenericImage operator*(const irtkGenericImage &);
 
   /// Multiplication operator (stores result)
-  irtkGenericImage& operator*=(const irtkGenericImage &);
+  irtkGenericImage &operator*=(const irtkGenericImage &);
 
   /// Division operator
-  irtkGenericImage  operator/ (const irtkGenericImage &);
+  irtkGenericImage operator/(const irtkGenericImage &);
 
   /// Division operator (stores result)
-  irtkGenericImage& operator/=(const irtkGenericImage &);
+  irtkGenericImage &operator/=(const irtkGenericImage &);
 
   //
   // Operators for image and Type arithmetics
   //
 
   /// Set all pixels to a constant value
-  irtkGenericImage& operator= (VoxelType);
+  irtkGenericImage &operator=(VoxelType);
   /// Addition operator for type
-  irtkGenericImage  operator+ (VoxelType);
+  irtkGenericImage operator+(VoxelType);
   /// Addition operator for type (stores result)
-  irtkGenericImage& operator+=(VoxelType);
+  irtkGenericImage &operator+=(VoxelType);
   /// Subtraction operator for type
-  irtkGenericImage  operator- (VoxelType);
+  irtkGenericImage operator-(VoxelType);
   /// Subtraction operator for type (stores result)
-  irtkGenericImage& operator-=(VoxelType);
+  irtkGenericImage &operator-=(VoxelType);
   /// Multiplication operator for type
-  irtkGenericImage  operator* (VoxelType);
+  irtkGenericImage operator*(VoxelType);
   /// Multiplication operator for type (stores result)
-  irtkGenericImage& operator*=(VoxelType);
+  irtkGenericImage &operator*=(VoxelType);
   /// Division operator for type
-  irtkGenericImage  operator/ (VoxelType);
+  irtkGenericImage operator/(VoxelType);
   /// Division operator for type (stores result)
-  irtkGenericImage& operator/=(VoxelType);
+  irtkGenericImage &operator/=(VoxelType);
 
   //
   // Operators for image thresholding
   //
 
   /// Threshold operator >  (sets all values >  given value to that value)
-  irtkGenericImage  operator> (VoxelType);
+  irtkGenericImage operator>(VoxelType);
   /// Threshold operator >= (sets all values >= given value to that value)
-  irtkGenericImage& operator>=(VoxelType);
+  irtkGenericImage &operator>=(VoxelType);
   /// Threshold operator <  (sets all values <  given value to that value)
-  irtkGenericImage  operator< (VoxelType);
+  irtkGenericImage operator<(VoxelType);
   /// Threshold operator <= (sets all values <= given value to that value)
-  irtkGenericImage& operator<=(VoxelType);
+  irtkGenericImage &operator<=(VoxelType);
 
   /// Comparison operators == (explicit negation yields != operator)
   bool operator==(const irtkGenericImage &);
@@ -232,9 +233,9 @@ public:
   /// Flip z and t axis
   void FlipZT(int);
 
-  //
-  // Conversions from and to VTK
-  //
+//
+// Conversions from and to VTK
+//
 
 #ifdef HAS_VTK
 
@@ -252,34 +253,38 @@ public:
   double GetAsDouble(int, int, int, int = 0) const;
 
   /// Function for pixel put access
-  void   PutAsDouble(int, int, int, double);
+  void PutAsDouble(int, int, int, double);
 
   /// Function for pixel put access
-  void   PutAsDouble(int, int, int, int, double);
+  void PutAsDouble(int, int, int, int, double);
 
   /// Returns the name of the image class
   const char *NameOfClass();
-  
+
   /// Function for pixel access via pointers
   void *GetScalarPointer(int = 0, int = 0, int = 0, int = 0) const;
 
   /// Function which returns pixel scalar type
   virtual int GetScalarType() const;
-  
-  /// Function which returns the minimum value the pixel can hold without overflowing
+
+  /// Function which returns the minimum value the pixel can hold without
+  /// overflowing
   virtual double GetScalarTypeMin() const;
 
-  /// Function which returns the minimum value the pixel can hold without overflowing
+  /// Function which returns the minimum value the pixel can hold without
+  /// overflowing
   virtual double GetScalarTypeMax() const;
 
 };
 
-template <class VoxelType> inline void irtkGenericImage<VoxelType>::Put(int x, int y, int z, VoxelType val)
-{
+template <class VoxelType>
+inline void irtkGenericImage<VoxelType>::Put(int x, int y, int z,
+    VoxelType val) {
 #ifdef NO_BOUNDS
   _matrix[0][z][y][x] = val;
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0)) {
     cout << "irtkGenericImage<VoxelType>::Put: parameter out of range\n";
   } else {
     _matrix[0][z][y][x] = static_cast<VoxelType>(val);
@@ -287,12 +292,14 @@ template <class VoxelType> inline void irtkGenericImage<VoxelType>::Put(int x, i
 #endif
 }
 
-template <class VoxelType> inline void irtkGenericImage<VoxelType>::Put(int x, int y, int z, int t, VoxelType val)
-{
+template <class VoxelType>
+inline void irtkGenericImage<VoxelType>::Put(int x, int y, int z, int t,
+    VoxelType val) {
 #ifdef NO_BOUNDS
   _matrix[t][z][y][x] = val;
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<VoxelType>::Put: parameter out of range\n";
   } else {
     _matrix[t][z][y][x] = val;
@@ -300,15 +307,19 @@ template <class VoxelType> inline void irtkGenericImage<VoxelType>::Put(int x, i
 #endif
 }
 
-template <class VoxelType> inline void irtkGenericImage<VoxelType>::PutAsDouble(int x, int y, int z, double val)
-{
-  if (val > voxel_limits<VoxelType>::max()) val = voxel_limits<VoxelType>::max();
-  if (val < voxel_limits<VoxelType>::min()) val = voxel_limits<VoxelType>::min();  
+template <class VoxelType>
+inline void irtkGenericImage<VoxelType>::PutAsDouble(int x, int y, int z,
+    double val) {
+  if (val > voxel_limits<VoxelType>::max())
+    val = voxel_limits<VoxelType>::max();
+  if (val < voxel_limits<VoxelType>::min())
+    val = voxel_limits<VoxelType>::min();
 
 #ifdef NO_BOUNDS
   _matrix[0][z][y][x] = static_cast<VoxelType>(val);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (_attr._t > 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (_attr._t > 0)) {
     cout << "irtkGenericImage<Type>::PutAsDouble: parameter out of range\n";
   } else {
     _matrix[0][z][y][x] = static_cast<VoxelType>(val);
@@ -316,15 +327,19 @@ template <class VoxelType> inline void irtkGenericImage<VoxelType>::PutAsDouble(
 #endif
 }
 
-template <class VoxelType> inline void irtkGenericImage<VoxelType>::PutAsDouble(int x, int y, int z, int t, double val)
-{
-  if (val > voxel_limits<VoxelType>::max()) val = voxel_limits<VoxelType>::max();
-  if (val < voxel_limits<VoxelType>::min()) val = voxel_limits<VoxelType>::min();  
+template <class VoxelType>
+inline void irtkGenericImage<VoxelType>::PutAsDouble(int x, int y, int z, int t,
+    double val) {
+  if (val > voxel_limits<VoxelType>::max())
+    val = voxel_limits<VoxelType>::max();
+  if (val < voxel_limits<VoxelType>::min())
+    val = voxel_limits<VoxelType>::min();
 
 #ifdef NO_BOUNDS
   _matrix[t][z][y][x] = static_cast<VoxelType>(val);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::PutAsDouble: parameter out of range\n";
   } else {
     _matrix[t][z][y][x] = static_cast<VoxelType>(val);
@@ -332,12 +347,14 @@ template <class VoxelType> inline void irtkGenericImage<VoxelType>::PutAsDouble(
 #endif
 }
 
-template <class VoxelType> inline VoxelType irtkGenericImage<VoxelType>::Get(int x, int y, int z, int t) const
-{
+template <class VoxelType>
+inline VoxelType irtkGenericImage<VoxelType>::Get(int x, int y, int z,
+    int t) const {
 #ifdef NO_BOUNDS
   return (_matrix[t][z][y][x]);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::Get: parameter out of range\n";
     return 0;
   } else {
@@ -346,12 +363,14 @@ template <class VoxelType> inline VoxelType irtkGenericImage<VoxelType>::Get(int
 #endif
 }
 
-template <class VoxelType> inline double irtkGenericImage<VoxelType>::GetAsDouble(int x, int y, int z, int t) const
-{
+template <class VoxelType>
+inline double irtkGenericImage<VoxelType>::GetAsDouble(int x, int y, int z,
+    int t) const {
 #ifdef NO_BOUNDS
   return (static_cast<double>(_matrix[t][z][y][x]));
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::GetAsDouble: parameter out of range\n";
     return 0;
   } else {
@@ -361,12 +380,14 @@ template <class VoxelType> inline double irtkGenericImage<VoxelType>::GetAsDoubl
 
 }
 
-template <class VoxelType> inline VoxelType& irtkGenericImage<VoxelType>::operator()(int x, int y, int z, int t)
-{
+template <class VoxelType>
+inline VoxelType &irtkGenericImage<VoxelType>::operator()(int x, int y, int z,
+    int t) {
 #ifdef NO_BOUNDS
   return (_matrix[t][z][y][x]);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::(): parameter out of range\n";
     return _matrix[0][0][0][0];
   } else {
@@ -375,12 +396,14 @@ template <class VoxelType> inline VoxelType& irtkGenericImage<VoxelType>::operat
 #endif
 }
 
-template <class VoxelType> inline int irtkGenericImage<VoxelType>::VoxelToIndex(int x, int y, int z, int t) const
-{
+template <class VoxelType>
+inline int irtkGenericImage<VoxelType>::VoxelToIndex(int x, int y, int z,
+    int t) const {
 #ifdef NO_BOUNDS
   return (&(_matrix[t][z][y][x]) - &(_matrix[0][0][0][0]));
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::VoxelToIndex: parameter out of range\n";
     return 0;
   } else {
@@ -389,12 +412,14 @@ template <class VoxelType> inline int irtkGenericImage<VoxelType>::VoxelToIndex(
 #endif
 }
 
-template <class VoxelType> inline VoxelType *irtkGenericImage<VoxelType>::GetPointerToVoxels(int x, int y, int z, int t) const
-{
+template <class VoxelType>
+inline VoxelType *irtkGenericImage<VoxelType>::GetPointerToVoxels(int x, int y,
+    int z, int t) const {
 #ifdef NO_BOUNDS
   return &(_matrix[t][z][y][x]);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::GetPointerToVoxels: parameter out of range\n";
     cout << x << " " << y << " " << z << " " << t << endl;
     return NULL;
@@ -404,12 +429,14 @@ template <class VoxelType> inline VoxelType *irtkGenericImage<VoxelType>::GetPoi
 #endif
 }
 
-template <class VoxelType> inline void *irtkGenericImage<VoxelType>::GetScalarPointer(int x, int y, int z, int t) const
-{
+template <class VoxelType>
+inline void *irtkGenericImage<VoxelType>::GetScalarPointer(int x, int y, int z,
+    int t) const {
 #ifdef NO_BOUNDS
   return &(_matrix[t][z][y][x]);
 #else
-  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) || (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
+  if ((x >= _attr._x) || (x < 0) || (y >= _attr._y) || (y < 0) ||
+      (z >= _attr._z) || (z < 0) || (t >= _attr._t) || (t < 0)) {
     cout << "irtkGenericImage<Type>::GetScalarPointer: parameter out of range\n";
     cout << x << " " << y << " " << z << " " << t << endl;
     return NULL;
@@ -419,54 +446,46 @@ template <class VoxelType> inline void *irtkGenericImage<VoxelType>::GetScalarPo
 #endif
 }
 
-template <> inline int irtkGenericImage<char>::GetScalarType() const
-{
-	return IRTK_VOXEL_CHAR;
+template <> inline int irtkGenericImage<char>::GetScalarType() const {
+  return IRTK_VOXEL_CHAR;
 }
 
-template <> inline int irtkGenericImage<unsigned char>::GetScalarType() const
-{
-	return IRTK_VOXEL_UNSIGNED_CHAR;
+template <> inline int irtkGenericImage<unsigned char>::GetScalarType() const {
+  return IRTK_VOXEL_UNSIGNED_CHAR;
 }
 
-template <> inline int irtkGenericImage< unsigned short>::GetScalarType() const
-{
-	return IRTK_VOXEL_UNSIGNED_SHORT;
+template <> inline int irtkGenericImage<unsigned short>::GetScalarType() const {
+  return IRTK_VOXEL_UNSIGNED_SHORT;
 }
 
-template <> inline int irtkGenericImage<short>::GetScalarType() const
-{
-	return IRTK_VOXEL_SHORT;
+template <> inline int irtkGenericImage<short>::GetScalarType() const {
+  return IRTK_VOXEL_SHORT;
 }
 
-template <> inline int irtkGenericImage<int>::GetScalarType() const
-{
-	return IRTK_VOXEL_INT;
+template <> inline int irtkGenericImage<int>::GetScalarType() const {
+  return IRTK_VOXEL_INT;
 }
 
-template <> inline int irtkGenericImage<unsigned int>::GetScalarType() const
-{
-	return IRTK_VOXEL_UNSIGNED_INT;
+template <> inline int irtkGenericImage<unsigned int>::GetScalarType() const {
+  return IRTK_VOXEL_UNSIGNED_INT;
 }
 
-template <> inline int irtkGenericImage<float>::GetScalarType() const
-{
-	return IRTK_VOXEL_FLOAT;
+template <> inline int irtkGenericImage<float>::GetScalarType() const {
+  return IRTK_VOXEL_FLOAT;
 }
 
-template <> inline int irtkGenericImage<double>::GetScalarType() const
-{
-	return IRTK_VOXEL_DOUBLE;
+template <> inline int irtkGenericImage<double>::GetScalarType() const {
+  return IRTK_VOXEL_DOUBLE;
 }
 
-template <class VoxelType> inline double irtkGenericImage<VoxelType>::GetScalarTypeMin() const
-{
-	return std::numeric_limits<VoxelType>::min();
+template <class VoxelType>
+inline double irtkGenericImage<VoxelType>::GetScalarTypeMin() const {
+  return std::numeric_limits<VoxelType>::min();
 }
 
-template <class VoxelType> inline double irtkGenericImage<VoxelType>::GetScalarTypeMax() const
-{
-	return std::numeric_limits<VoxelType>::max();
+template <class VoxelType>
+inline double irtkGenericImage<VoxelType>::GetScalarTypeMax() const {
+  return std::numeric_limits<VoxelType>::max();
 }
 
 #endif
