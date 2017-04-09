@@ -5,6 +5,9 @@ cmake_policy(SET CMP0010 OLD)
 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
+set(CMAKE_CXX_RELEASE "")
+set(CMAKE_CXX_FLAGS " -std=gnu++14 -O4 -DNDEBUG -Wall -Werror -D__EBB__ -DHAS_NIFTI  -DHAVE_INLINE  -Wno-unused-but-set-variable -Wno-unused-result -Wno-unused-label -Wno-unused-function -Wno-sign-compare -Wno-unused-variable -Wno-comment -Wno-return-type -Wno-write-strings -Wno-format -Wno-maybe-uninitialized ") #SMAFJAS 
+
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH  ${CMAKE_SOURCE_DIR}/lib)
 

@@ -14,6 +14,15 @@
 
 #define _IRTKRIGIDTRANSFORMATION_H
 
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
+
 /**
  * Class for rigid transformations.
  *
@@ -29,8 +38,28 @@
 class irtkRigidTransformation : public irtkHomogeneousTransformation {
 
 protected:
+  /// Serialization
+  friend class boost::serialization::access;
+  template <class Archive>
+  void serialize(Archive &ar, const unsigned int version) {
+    ar & _tx & _ty & _tz & _rx & _ry & _rz & _cosrx
+      & _cosry & _cosrz & _sinrx & _sinry & _sinrz; 
 
-  /// Translation along the x-axis (in mm)
+    ar & _matrix;
+  }
+
+  /// Construct a matrix based on parameters passed in the array.
+  virtual irtkMatrix Parameters2Matrix(double *) const;
+
+  /// Return an array with parameters corresponding to a given matrix.
+  virtual void Matrix2Parameters(irtkMatrix, double *) const;
+
+  /// Assign the parameters passed to the current object and update the
+  /// matrix.
+  virtual void SetParameters(double *params);
+
+public:
+    /// Translation along the x-axis (in mm)
   double _tx;
 
   /// Translation along the y-axis (in mm)
@@ -66,23 +95,14 @@ protected:
   /// Sine of rotation angle rz
   double _sinrz;
 
-  /// Construct a matrix based on parameters passed in the array.
-  virtual irtkMatrix Parameters2Matrix(double *) const;
-
-  /// Return an array with parameters corresponding to a given matrix.
-  virtual void Matrix2Parameters(irtkMatrix, double*) const;
-
-  /// Assign the parameters passed to the current object and update the
-  /// matrix.
-  virtual void SetParameters(double *params);
-
-public:
 
   /// Constructor (default)
   irtkRigidTransformation();
 
   /// Constructor (copy)
   irtkRigidTransformation(const irtkRigidTransformation &);
+  
+  irtkRigidTransformation(double, double, double, double, double, double, double, double, double, double, double, double, int, int, int, int, int, int, irtkMatrix);
 
   /// Destructor
   virtual ~irtkRigidTransformation();
@@ -150,6 +170,10 @@ public:
 
   void Print2();
 
+  void Print3();
+  
+  double Sum();
+  
   /// Check file header
   static int CheckHeader(char *);
 
@@ -228,11 +252,40 @@ inline irtkRigidTransformation::irtkRigidTransformation(
   this->UpdateMatrix();
 }
 
-inline irtkRigidTransformation::~irtkRigidTransformation()
-{}
+inline irtkRigidTransformation::irtkRigidTransformation(double tx, double ty, double tz, double rx, double ry, double rz, double cosrx, double cosry, double cosrz, double sinrx, double sinry, double sinrz, int s0, int s1, int s2, int s3, int s4, int s5, irtkMatrix m) {
+    
+    _tx = tx;
+    _ty = ty;
+    _tz = tz;
 
-inline void irtkRigidTransformation::Reset()
-{
+    _rx = rx;
+    _ry = ry;
+    _rz = rz;
+
+    _cosrx = cosrx;
+    _cosry = cosry;
+    _cosrz = cosrz;
+
+    _sinrx = sinrx;
+    _sinry = sinry;
+    _sinrz = sinrz;
+
+    if (_status != NULL) delete[] _status;
+    
+    _status = new _Status[this->NumberOfDOFs()];
+    _status[0] = (_Status)s0;
+    _status[1] = (_Status)s1;
+    _status[2] = (_Status)s2;
+    _status[3] = (_Status)s3;
+    _status[4] = (_Status)s4;
+    _status[5] = (_Status)s5;
+
+    _matrix = std::move(m);
+}
+
+inline irtkRigidTransformation::~irtkRigidTransformation() {}
+
+inline void irtkRigidTransformation::Reset() {
   // Initialize rotations and translations
   _tx = _ty = _tz = 0;
   _rx = _ry = _rz = 0;
@@ -304,4 +357,16 @@ inline void irtkRigidTransformation::SetParameters(double *params) {
   this->UpdateMatrix();
 }
 
+inline void irtkRigidTransformation::Print3() {
+    cout << _tx << " " << _ty << " " << _tz << " " << _rx << " " << _ry << " " << _rz << " " << _cosrx << " " << _cosry << " " << _cosrz << " " << _sinrx << " " << _sinry << " " << _sinrz << " _status: " << _status[0] << " " << _status[1] <<" " << _status[2] <<" " << _status[3] <<" " << _status[4] <<" " << _status[5]; 
+    
+    cout << " _matrix = " << _matrix.Sum() << endl;
+}
+
+inline double irtkRigidTransformation::Sum() {
+    double sum;
+    sum = _tx +_ty +_tz +_rx +_ry +_rz +_cosrx +_cosry +_cosrz +_sinrx +_sinry +_sinrz + _status[0] + _status[1] + _status[2] + _status[3] + _status[4] + _status[5]; 
+
+    return sum;
+}
 #endif

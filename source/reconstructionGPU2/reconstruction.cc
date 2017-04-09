@@ -638,7 +638,7 @@ int main(int argc, char **argv)
     if (!no_log) {
       cout.rdbuf(strm_buffer);
     }
-    cout << "[Iteration " << iter << "] " << endl;
+    //cout << "[Iteration " << iter << "] " << endl;
 
     //perform slice-to-volume registrations - skip the first iteration 
     if (iter > 0)
@@ -770,11 +770,13 @@ int main(int argc, char **argv)
     for (i = 0; i < rec_iterations; i++)
     {
 
-      cout << endl << "[Reconstruction iteration " << i << "]" << endl;
+      /*
+        cout << endl << "[Reconstruction iteration " << i << "]" << endl;
 
-      cout << "[Bias input] _intensityMatching: " << intensity_matching << endl;
-      cout << "[Bias input] _disableBiasCorr: " << disableBiasCorr << endl;
-      cout << "[Bias input] _sigma: " << sigma << endl;
+        cout << "[Bias input] _intensityMatching: " << intensity_matching << endl;
+        cout << "[Bias input] _disableBiasCorr: " << disableBiasCorr << endl;
+        cout << "[Bias input] _sigma: " << sigma << endl;
+      */
 
       if (intensity_matching)
       {

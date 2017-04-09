@@ -745,7 +745,7 @@ void irtkReconstruction::SetMask(irtkRealImage * mask, double sigma, double thre
 
   if (mask != NULL) {
     //if sigma is nonzero first smooth the mask
-    if (sigma > 0) {
+     if (sigma > 0) {
       //blur mask
       irtkGaussianBlurring<irtkRealPixel> gb(sigma);
       gb.SetInput(mask);
@@ -763,6 +763,7 @@ void irtkReconstruction::SetMask(irtkRealImage * mask, double sigma, double thre
       }
     }
 
+
     //resample the mask according to the template volume using identity transformation
     irtkRigidTransformation transformation;
     irtkImageTransformation imagetransformation;
@@ -774,7 +775,24 @@ void irtkReconstruction::SetMask(irtkRealImage * mask, double sigma, double thre
     //need to fill voxels in target where there is no info from source with zeroes
     imagetransformation.PutSourcePaddingValue(0);
     imagetransformation.PutInterpolator(&interpolator);
+    
+    if (_debug) {
+      cout << "[SetMask] mask: " << SumImage(*mask) << endl;
+      cout << "[SetMask] _mask: " << SumImage(_mask) << endl;
+      cout << "[SetMask] transformation: ";
+      transformation.Print2();
+      cout << endl;
+    }
+
     imagetransformation.Run();
+
+    if (_debug) {
+      cout << "[SetMask] mask: " << SumImage(*mask) << endl;
+      cout << "[SetMask] _mask: " << SumImage(_mask) << endl;
+      cout << "[SetMask] transformation: ";
+      transformation.Print2();
+      cout << endl;
+    }
   }
   else {
     //fill the mask with ones
@@ -1064,7 +1082,8 @@ void irtkReconstruction::ScaleVolume()
   }
   cout << endl;
 
-  PrintImageSums("[ScaleVolume output]");
+  if (_debug)
+    PrintImageSums("[ScaleVolume output]");
 }
 
 
@@ -1152,7 +1171,8 @@ void irtkReconstruction::SimulateSlices()
     _simulated_slices[40].Write("testsimslices40.nii");
 }
   
-  PrintImageSums("[SimulateSlices output]");
+  if (_debug)
+    PrintImageSums("[SimulateSlices output]");
 
 }
 
@@ -1874,15 +1894,15 @@ public:
         registration.GuessParameterSliceToVolume();
         registration.SetTargetPadding(-1);
 
-        cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " transformation: ";
-        reconstructor->_transformations[inputIndex].Print2();
-        cout << endl;
+       //cout << "[ParallelSliceToVolumeRegistration input] " << inputIndex << " transformation: ";
+       //reconstructor->_transformations[inputIndex].Print2();
+       //cout << endl;
 
         registration.Run();
 
-        cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " transformation: ";
-        reconstructor->_transformations[inputIndex].Print2();
-        cout << endl;
+       //cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " transformation: ";
+       //reconstructor->_transformations[inputIndex].Print2();
+       //cout << endl;
 
         //cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " target: " << reconstructor->SumImage(target) << endl;
         //cout << "[ParallelSliceToVolumeRegistration output] " << inputIndex << " offset: ";
@@ -2142,7 +2162,8 @@ void irtkReconstruction::SliceToVolumeRegistration()
     _transformations_gpu = _transformations;
   }
   printf("\n");
-  PrintImageSums("[SliceToVolumeRegistration output]");
+  if (_debug)
+    PrintImageSums("[SliceToVolumeRegistration output]");
 }
 
 class ParallelCoeffInit {
@@ -2493,9 +2514,10 @@ void irtkReconstruction::CoeffInit()
 
   if (_debug) {
     cout << "Average volume weight is " << _average_volume_weight << endl;
-  }
 
-  PrintImageSums("[CoeffInit output]");
+    if (_debug)
+      PrintImageSums("[CoeffInit output]");
+  }
 }  //end of CoeffInit()
 
 void irtkReconstruction::SyncCPU()
@@ -2696,9 +2718,11 @@ void irtkReconstruction::GaussianReconstruction()
     cout << endl;
   }
 
-  PrintImageSums("[GaussianReconstruction output]");
-  cout << fixed << "[GaussianReconstruction output] _volumeWeights: " 
-    << SumImage(_volume_weights) << endl;
+  if (_debug) {
+    PrintImageSums("[GaussianReconstruction output]");
+    cout << fixed << "[GaussianReconstruction output] _volumeWeights: " 
+      << SumImage(_volume_weights) << endl;
+  }
 }
 
 void irtkReconstruction::InitializeEM()
@@ -2922,13 +2946,14 @@ void irtkReconstruction::InitializeRobustStatistics()
     cout << "Initializing robust statistics CPU: " << "sigma=" << sqrt(_sigma_cpu) << " " << "m=" << _m_cpu
     << " " << "mix=" << _mix_cpu << " " << "mix_s=" << _mix_s_cpu << endl;
 
-
-  PrintImageSums("[InitializeRobustStatistics output]");
-  cout << "[InitializeRobustStatistics output] _sigmaCPU: " << _sigma_cpu << endl;
-  cout << "[InitializeRobustStatistics output] _sigmaSCPU: " << _sigma_s_cpu << endl;
-  cout << "[InitializeRobustStatistics output] _mixCPU: " << _mix_cpu << endl;
-  cout << "[InitializeRobustStatistics output] _mixSCPU: " << _mix_s_cpu << endl;
-  cout << "[InitializeRobustStatistics output] _mCPU: " << _m_cpu << endl;
+  if (_debug) {
+    PrintImageSums("[InitializeRobustStatistics output]");
+    cout << "[InitializeRobustStatistics output] _sigmaCPU: " << _sigma_cpu << endl;
+    cout << "[InitializeRobustStatistics output] _sigmaSCPU: " << _sigma_s_cpu << endl;
+    cout << "[InitializeRobustStatistics output] _mixCPU: " << _mix_cpu << endl;
+    cout << "[InitializeRobustStatistics output] _mixSCPU: " << _mix_s_cpu << endl;
+    cout << "[InitializeRobustStatistics output] _mCPU: " << _m_cpu << endl;
+  }
 }
 
 class ParallelEStep {
@@ -3357,15 +3382,16 @@ void irtkReconstruction::EStep()
   else
     _mean_s2_cpu = (maxs + _mean_s_cpu) / 2;
 
-  cout << "[EStepI output] _sum: " << sum << endl;
-  cout << "[EStepI output] _den: " << den << endl;
-  cout << "[EStepI output] _den2: " << den2 << endl;
-  cout << "[EStepI output] _sum2: " << sum2 << endl;
-  cout << "[EStepI output] _maxs: " << maxs << endl;
-  cout << "[EStepI output] _mins: " << mins << endl;
-  cout << "[EStepI output] _meanSCPU: " << _mean_s_cpu << endl;
-  cout << "[EStepI output] _meanS2CPU: " << _mean_s2_cpu << endl;
-
+  if (_debug) {
+    cout << "[EStepI output] _sum: " << sum << endl;
+    cout << "[EStepI output] _den: " << den << endl;
+    cout << "[EStepI output] _den2: " << den2 << endl;
+    cout << "[EStepI output] _sum2: " << sum2 << endl;
+    cout << "[EStepI output] _maxs: " << maxs << endl;
+    cout << "[EStepI output] _mins: " << mins << endl;
+    cout << "[EStepI output] _meanSCPU: " << _mean_s_cpu << endl;
+    cout << "[EStepI output] _meanS2CPU: " << _mean_s2_cpu << endl;
+  }
   //Calculate the variances of the potentials
   sum = 0;
   den = 0;
@@ -3423,12 +3449,14 @@ void irtkReconstruction::EStep()
     }
   }
 
-  cout << "[EStepII output] _sum: " << sum << endl;
-  cout << "[EStepII output] _den: " << den << endl;
-  cout << "[EStepII output] _den2: " << den2 << endl;
-  cout << "[EStepII output] _sum2: " << sum2 << endl;
-  cout << "[EStepII output] _sigmaSCPU: " << _sigma_s_cpu << endl;
-  cout << "[EStepII output] _sigmaS2CPU: " << _sigma_s2_cpu << endl;
+  if (_debug) {
+    cout << "[EStepII output] _sum: " << sum << endl;
+    cout << "[EStepII output] _den: " << den << endl;
+    cout << "[EStepII output] _den2: " << den2 << endl;
+    cout << "[EStepII output] _sum2: " << sum2 << endl;
+    cout << "[EStepII output] _sigmaSCPU: " << _sigma_s_cpu << endl;
+    cout << "[EStepII output] _sigmaS2CPU: " << _sigma_s2_cpu << endl;
+  }
 
   //cout << "[EStepIII input] _meanSCPU: " << _mean_s_cpu << endl;
   //cout << "[EStepIII input] _meanS2CPU: " << _mean_s2_cpu << endl;
@@ -3495,9 +3523,11 @@ void irtkReconstruction::EStep()
     _mix_s_cpu = 0.9;
   }
   
-  cout << "[EStepIII output] _sum: " << sum << endl;
-  cout << "[EStepIII output] _num: " << num << endl;
-  cout << "[EStepIII output] _mixSCPU: " << _mix_s_cpu << endl;
+  if (_debug) {
+    cout << "[EStepIII output] _sum: " << sum << endl;
+    cout << "[EStepIII output] _num: " << num << endl;
+    cout << "[EStepIII output] _mixSCPU: " << _mix_s_cpu << endl;
+  }
 
   if (_debug || _debugGPU) {
     cout << setprecision(6);
@@ -3880,14 +3910,15 @@ void irtkReconstruction::SuperresolutionGPU(int iter)
 
 void irtkReconstruction::Superresolution(int iter)
 {
-  if (_debug)
+  if (_debug) {
     cout << "Superresolution " << iter << endl;
 
-  cout << "[SuperResolution input] iteration: " << iter << endl;
-  cout << "[SuperResolution input] _alpha: " << _alpha << endl;
-  cout << "[SuperResolution input] _globalBiasCorrection: " << _global_bias_correction << endl;
-  cout << "[SuperResolution input] _minIntensity: " << _min_intensity << endl;
-  cout << "[SuperResolution input] _maxIntensity: " <<_max_intensity << endl;
+    cout << "[SuperResolution input] iteration: " << iter << endl;
+    cout << "[SuperResolution input] _alpha: " << _alpha << endl;
+    cout << "[SuperResolution input] _globalBiasCorrection: " << _global_bias_correction << endl;
+    cout << "[SuperResolution input] _minIntensity: " << _min_intensity << endl;
+    cout << "[SuperResolution input] _maxIntensity: " <<_max_intensity << endl;
+  }
 
   int i, j, k;
   irtkRealImage addon, original;
@@ -3947,13 +3978,15 @@ void irtkReconstruction::Superresolution(int iter)
 
     sprintf(buffer, "cmapCPU%i.nii", iter - 1);
     _confidence_map.Write(buffer);
-}
+  }
 
-  PrintImageSums("[SuperResolution output]");
-  cout << fixed << "[SuperResolution output] _addon: " << SumImage(addon) 
-    << endl;
-  cout << fixed << "[SuperResolution output] _confidenceMap: " 
-    << SumImage(_confidence_map) << endl;
+  if (_debug) {
+    PrintImageSums("[SuperResolution output]");
+    cout << fixed << "[SuperResolution output] _addon: " << SumImage(addon) 
+      << endl;
+    cout << fixed << "[SuperResolution output] _confidenceMap: " 
+      << SumImage(_confidence_map) << endl;
+  }
 }
 
 class ParallelMStep{
@@ -4102,9 +4135,11 @@ void irtkReconstruction::MStep(int iter)
     cout << " m = " << _m_cpu << endl;
   }
 
-  cout << fixed << "[MStep output] _sigmaCPU: " << _sigma_cpu << endl;
-  cout << fixed << "[MStep output] _mixCPU: " << _mix_cpu << endl;
-  cout << fixed << "[MStep output] _mCPU: " << _m_cpu << endl;
+  if (_debug) {
+    cout << fixed << "[MStep output] _sigmaCPU: " << _sigma_cpu << endl;
+    cout << fixed << "[MStep output] _mixCPU: " << _mix_cpu << endl;
+    cout << fixed << "[MStep output] _mCPU: " << _m_cpu << endl;
+  }
 }
 
 class ParallelAdaptiveRegularization1 {
