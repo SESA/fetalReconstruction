@@ -28,6 +28,16 @@ See LICENSE for details
 
 #include <iostream>
 #include <cmath>
+#include <memory>
+
+#include <boost/serialization/base_object.hpp>
+#include <boost/serialization/utility.hpp>
+#include <boost/serialization/list.hpp>
+#include <boost/serialization/assume_abstract.hpp>
+#include <boost/archive/tmpdir.hpp>
+#include <boost/serialization/vector.hpp>
+#include <boost/archive/text_oarchive.hpp>
+#include <boost/archive/text_iarchive.hpp>
 
 /**
 
@@ -37,7 +47,37 @@ See LICENSE for details
 
 class irtkMatrix : public irtkObject
 {
-
+    class Matrix {
+    public:
+	Matrix(){
+	    rows_ = 0;
+	    cols_ = 0;
+	    data_ = NULL;
+	}
+    
+    Matrix(int rows, int cols, std::unique_ptr<double[]> data)
+	: rows_(rows), cols_(cols), data_(std::move(data)) {}
+	
+    Matrix(int rows, int cols)
+	: rows_(rows), cols_(cols), data_(new double[rows * cols]) {
+	    for (auto i = 0; i < (rows_ * cols_); ++i) {
+		data_[i] = i;
+	    }
+	}
+	
+	void setRow(int r) {rows_ = r;}
+	void setCol(int c) {cols_ = c;}
+	//void setMat(double *m) {std::make_unique<double*>(m);}
+	double* getMat() {return data_.get();}
+	double *operator[](int row) const { return &data_[row * cols_]; }
+	
+    private:
+        int rows_;
+        int cols_;
+	//double *data_;
+	std::unique_ptr<double[]> data_;
+    };
+    
 protected:
 
   /// Number of rows
@@ -47,7 +87,31 @@ protected:
   int _cols;
 
   /// Data
-  double **_matrix;
+  //double **_matrix;
+  Matrix _matrix;
+    
+  /// Serialization
+  friend class boost::serialization::access;
+  template<class Archive>
+  void serialize(Archive & ar, const unsigned int version)
+  {
+      int i, j;
+      ar & _rows & _cols;
+
+      //need to allocate memory
+      /*if (_matrix == NULL)
+      {
+	  _matrix = Allocate(_matrix, _rows, _cols);
+      }
+
+      for (i = 0; i < _rows; i++) 
+      {
+	  for (j = 0; j < _cols; j++) 
+	  {
+	      ar & _matrix[i][j];
+	  }
+	  }*/
+  }
 
 public:
 
@@ -56,6 +120,8 @@ public:
 
   /// Constructor for given number of rows and columns
   irtkMatrix(int, int);
+  //irtkMatrix(int, int, double[]);
+  irtkMatrix(int, int, std::unique_ptr<double[]>);
 
   /// Copy constructor
   irtkMatrix(const irtkMatrix &);
@@ -76,6 +142,7 @@ public:
   /// Returns number of columns
   int Cols() const;
 
+  double* GetMatrix();
   /// Puts matrix value
   void   Put(int, int, double);
 
@@ -247,6 +314,11 @@ public:
   /// Import matrix from text file (requires no. of expected rows and cols)
   void Import (char *, int, int);
 
+  double Sum();
+  void setRow(int);
+  void setCol(int);
+  void setMatrix(double *mat);
+  
 #ifdef USE_VXL
 
   /// Conversion to VNL matrix
@@ -287,6 +359,11 @@ inline int irtkMatrix::Cols() const
   return _cols;
 }
 
+inline double* irtkMatrix::GetMatrix()
+{
+    return _matrix.getMat();
+}
+
 inline void irtkMatrix::Put(int rows, int cols, double matrix)
 {
 #ifdef NO_BOUNDS
@@ -306,7 +383,7 @@ inline double irtkMatrix::Get(int rows, int cols) const
   return _matrix[cols][rows];
 #else
   if ((rows >= 0) && (rows < _rows) && (cols >= 0) && (cols < _cols)) {
-    return _matrix[cols][rows];
+    return (double)_matrix[cols][rows];
   } else {
     cout << "irtkMatrix::Get: parameter out of range\n";
     return 0;
@@ -525,6 +602,37 @@ inline double irtkMatrix::InfinityNorm(void) const
   return normInf;
 }
 
+inline double irtkMatrix::Sum()
+{
+    int i, j;
+    double sum;
+    
+    sum = 0.0;
+    for(i=0;i<_rows;i++)
+    {
+	for(j=0;j<_cols;j++)
+	{
+	    sum += _matrix[i][j];
+	}
+    }
+    
+    return sum;
+}
+
+inline void irtkMatrix::setRow(int r)
+{
+    _rows = r;
+}
+
+inline void irtkMatrix::setCol(int c)
+{
+    _cols = c;
+}
+
+inline void irtkMatrix::setMatrix(double *mat)
+{
+    //_matrix.setMat(mat);
+}
 
 #endif
 
