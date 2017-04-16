@@ -29,13 +29,44 @@ See LICENSE for details
 
 #define NR_TOL 1.0e-5
 
+class Matrix {
+    public:
+    Matrix(){
+	    rows_ = 0;
+	    cols_ = 0;
+	    data_ = NULL;
+	}
+
+    Matrix(int rows, int cols, double mat[])
+	: rows_(rows), cols_(cols), data_(mat) {}
+	
+    Matrix(int rows, int cols)
+	: rows_(rows), cols_(cols), data_(new double[rows * cols]) {
+	    for (auto i = 0; i < (rows_ * cols_); ++i) {
+		data_[i] = i;
+	    }
+	}
+	
+	void setRow(int r) {rows_ = r;}
+	void setCol(int c) {cols_ = c;}
+	//void setMat(double *m) {std::make_unique<double*>(m);}
+	double* getMat() {return data_.get();}
+	double *operator[](int row) const { return &data_[row * cols_]; }
+	
+    private:
+        int rows_;
+        int cols_;
+	//double *data_;
+	std::unique_ptr<double[]> data_;
+    };
+
 //#define JACOBI
 
 irtkMatrix::irtkMatrix()
 {
   _rows = 0;
   _cols = 0;
-  _matrix = NULL;
+  _matrix = Matrix();
 }
 
 irtkMatrix::irtkMatrix(int rows, int cols)
@@ -44,13 +75,20 @@ irtkMatrix::irtkMatrix(int rows, int cols)
 
   _rows = rows;
   _cols = cols;
-  _matrix = NULL;
-  if ((_rows > 0) && (_cols > 0)) _matrix = Allocate(_matrix, _rows, _cols);
+  _matrix = Matrix();;
+  if ((_rows > 0) && (_cols > 0)) _matrix = Matrix(_rows, _cols); //Allocate(_matrix, _rows, _cols);
   for (j = 0; j < _cols; j++) {
     for (i = 0; i < _rows; i++) {
       _matrix[j][i] = 0;
     }
   }
+}
+
+irtkMatrix::irtkMatrix(int rows, int cols, std::unique_ptr<double[]> mat)
+{
+    _rows = rows;
+    _cols = cols;
+    _matrix = Matrix(rows, cols, std::move(mat));
 }
 
 irtkMatrix::irtkMatrix(const irtkMatrix& m) : irtkObject(m)
@@ -59,8 +97,8 @@ irtkMatrix::irtkMatrix(const irtkMatrix& m) : irtkObject(m)
 
   _rows = m._rows;
   _cols = m._cols;
-  _matrix = NULL;
-  if ((_rows > 0) && (_cols > 0)) _matrix = Allocate(_matrix, _rows, _cols);
+  _matrix = Matrix();;
+  if ((_rows > 0) && (_cols > 0)) _matrix = Matrix(_rows, _cols); //new double[_rows*_cols]; //Allocate(_matrix, _rows, _cols);
   for (j = 0; j < _cols; j++) {
     for (i = 0; i < _rows; i++) {
       _matrix[j][i] = m._matrix[j][i];
@@ -70,21 +108,23 @@ irtkMatrix::irtkMatrix(const irtkMatrix& m) : irtkObject(m)
 
 irtkMatrix::~irtkMatrix()
 {
-  if (_matrix != NULL) Deallocate(_matrix);
-  _matrix = NULL;
-  _rows = 0;
-  _cols = 0;
+    //delete _matrix;
+    //if (_matrix != NULL) delete _matrix; //Deallocate(_matrix);
+    //_matrix = NULL;
+    //_rows = 0;
+    //_cols = 0;
 }
 
 void irtkMatrix::Initialize(int rows, int cols)
 {
   int i, j;
 
-  if (_matrix != NULL) Deallocate(_matrix);
+  //delete _matrix;
+  //if (_matrix != NULL) delete _matrix; //Deallocate(_matrix);
   _rows = rows;
   _cols = cols;
-  _matrix = NULL;
-  if ((_rows > 0) && (_cols > 0)) _matrix = Allocate(_matrix, _rows, _cols);
+  //_matrix = NULL;
+  if ((_rows > 0) && (_cols > 0)) _matrix = Matrix(_rows, _cols); //new double[_rows*_cols]; //Allocate(_matrix, _rows, _cols);
 
   for (j = 0; j < _cols; j++) {
     for (i = 0; i < _rows; i++) {
@@ -133,11 +173,12 @@ irtkMatrix& irtkMatrix::operator =(const irtkMatrix& m)
 {
   int i, j;
 
-  if (_matrix != NULL) Deallocate(_matrix);
+  //delete _matrix;
+  //if (_matrix != NULL) delete _matrix; //Deallocate(_matrix);
   _rows = m._rows;
   _cols = m._cols;
-  _matrix = NULL;
-  if ((_rows > 0) && (_cols > 0)) _matrix = Allocate(_matrix, _rows, _cols);
+  //_matrix = NULL;
+  if ((_rows > 0) && (_cols > 0)) _matrix = Matrix(_rows, _cols); //new double[_rows*_cols]; //Allocate(_matrix, _rows, _cols);
 
   for (j = 0; j < _cols; j++) {
     for (i = 0; i < _rows; i++) {
@@ -671,8 +712,9 @@ void irtkMatrix::Transpose(void)
         tmp._matrix[j][i] = _matrix[j][i];
       }
     }
-    Deallocate(_matrix);
-    _matrix = Allocate(_matrix, tmp._cols, tmp._rows);
+    
+    //delete _matrix; //Deallocate(_matrix);
+    _matrix = Matrix(tmp._rows, tmp._cols);//new double[tmp._cols * tmp._rows]; //Allocate(_matrix, tmp._cols, tmp._rows);
     _rows = tmp._cols;
     _cols = tmp._rows;
     for (j = 0; j < _cols; j++) {
@@ -944,7 +986,8 @@ ostream& operator<< (ostream& os, const irtkMatrix &m)
 
   // Allocate temporary memory
   double *data  = new double [m._rows*m._cols];
-
+  //Matrix data = Matrix(m._rows, m._cols);
+  
   // Convert data
   index = 0;
   for (j = 0; j < m._cols; j++) {
