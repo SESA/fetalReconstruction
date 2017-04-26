@@ -82,6 +82,11 @@ double value;
 class irtkReconstruction : public irtkObject
 {
 
+public:
+    float eStepI = 0.0;
+    float eStepII = 0.0;
+    float eStepIII = 0.0;
+
 protected:
 
   //Structures to store the matrix of transformation between volume and slices

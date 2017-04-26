@@ -3311,6 +3311,11 @@ void irtkReconstruction::EStep()
   if (_debug)
     cout << "EStep: " << endl;
 
+  struct timeval start;
+  float seconds;
+
+  start = startTimer();
+
   unsigned int inputIndex;
   irtkRealImage slice, w, b, sim;
   int num = 0;
@@ -3372,6 +3377,9 @@ void irtkReconstruction::EStep()
       mins = slice_potential_cpu[inputIndex];
     }
 
+  seconds = endTimer(start);
+  eStepI += seconds;
+
   if (den > 0)
     _mean_s_cpu = sum / den;
   else
@@ -3393,6 +3401,8 @@ void irtkReconstruction::EStep()
     cout << "[EStepI output] _meanS2CPU: " << _mean_s2_cpu << endl;
   }
   //Calculate the variances of the potentials
+  start = startTimer();
+
   sum = 0;
   den = 0;
   sum2 = 0;
@@ -3408,6 +3418,9 @@ void irtkReconstruction::EStep()
     den2 += (1 - _slice_weight_cpu[inputIndex]);
 
     }
+
+  seconds = endTimer(start);
+  eStepII += seconds;
 
   //_sigma_s
   if ((sum > 0) && (den > 0)) {
@@ -3467,6 +3480,9 @@ void irtkReconstruction::EStep()
   //PrintImageSums("[EStepIII input]");
 
   //Calculate slice weights
+
+  start = startTimer();
+
   double gs1, gs2;
   for (inputIndex = 0; inputIndex < _slices.size(); inputIndex++) {
     //Slice does not have any voxels in volumetric ROI
@@ -3515,6 +3531,9 @@ void irtkReconstruction::EStep()
     sum += _slice_weight_cpu[inputIndex];
     num++;
     }
+
+  seconds = endTimer(start);
+  eStepIII += seconds;
 
   if (num > 0)
     _mix_s_cpu = sum / num;

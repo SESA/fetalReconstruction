@@ -246,6 +246,12 @@ int main(int argc, char **argv)
 	cout << "Using task_scheduler_init::automatic number of threads" << endl;
     }
  
+
+  struct timers executionTimes;
+  InitializeTimers(executionTimes);
+  
+  auto startTime = startTimer();
+
   if (useGPUReg) useCPUReg = false;
 
   cout << "Reconstructed volume name ... " << outputName << endl;
@@ -631,6 +637,12 @@ int main(int argc, char **argv)
   reconstruction.InitializeEM();
   stats.sample("InitializeEM");
 
+  struct timeval start;
+  float seconds;
+
+  auto initialReconstructionSeconds = endTimer(startTime);
+
+  auto startIterationTime = startTimer();
   //interleaved registration-reconstruction iterations
   for (int iter = 0; iter < iterations; iter++)
   {
@@ -680,7 +692,10 @@ int main(int argc, char **argv)
       }
       else
         cout << "Slice To Volume Registration CPU (2)" << endl;
+        start = startTimer();
         reconstruction.SliceToVolumeRegistration();
+        seconds = endTimer(start);
+        executionTimes.sliceToVolumeRegistration += seconds;
         stats.sample("Registration");
 
         cout << endl;
@@ -732,13 +747,18 @@ int main(int argc, char **argv)
     stats.sample("InitializeEMValues");
 
     //Calculate matrix of transformation between voxels of slices and volume
+    start = startTimer();
     reconstruction.CoeffInit();
+    seconds = endTimer(start);
+    executionTimes.coeffInit += seconds;
     stats.sample("CoeffInit");
 
     //Initialize reconstructed image with Gaussian weighted reconstruction
+    start = startTimer();
     reconstruction.GaussianReconstruction();
-    if (debug)
-    {
+    seconds = endTimer(start);
+    executionTimes.gaussianReconstruction += seconds;
+    if (debug) {
       reconstructed = reconstruction.GetReconstructed();
       sprintf(buffer, "GaussianReconstruction_CPU%i.nii", iter);
       reconstructed.Write(buffer);
@@ -747,11 +767,17 @@ int main(int argc, char **argv)
 
     //return EXIT_SUCCESS;
     //Simulate slices (needs to be done after Gaussian reconstruction)
+    start = startTimer();
     reconstruction.SimulateSlices();
+    seconds = endTimer(start);
+    executionTimes.simulateSlices += seconds;
     stats.sample("SimulateSlices");
 
     //Initialize robust statistics parameters
+    start = startTimer();
     reconstruction.InitializeRobustStatistics();
+    seconds = endTimer(start);
+    executionTimes.initializeRobustStatistics += seconds;
     stats.sample("InitializeRS");
 
     //EStep
@@ -789,12 +815,18 @@ int main(int argc, char **argv)
             }
           }
           //calculate scales
+          start = startTimer();
           reconstruction.Scale();
+          seconds = endTimer(start);
+          executionTimes.scale += seconds;
         stats.sample("Bias and Scale");
       }
 
       //MStep and update reconstructed volume
-        reconstruction.Superresolution(i + 1);
+      start = startTimer();
+      reconstruction.Superresolution(i + 1);
+      seconds = endTimer(start);
+      executionTimes.superResolution += seconds;
       stats.sample("Superresolution");
 
       //return EXIT_SUCCESS; 
@@ -814,10 +846,16 @@ int main(int argc, char **argv)
 
       // Simulate slices (needs to be done
       // after the update of the reconstructed volume)
+      start = startTimer();
       reconstruction.SimulateSlices();
+      seconds = endTimer(start);
+      executionTimes.simulateSlices += seconds;
       stats.sample("SimulateSlices");
 
+      start = startTimer();
       reconstruction.MStep(i + 1);
+      seconds = endTimer(start);
+      executionTimes.mStep += seconds;
       stats.sample("MStep");
 
       //E-step
@@ -833,13 +871,9 @@ int main(int argc, char **argv)
 
     }//end of reconstruction iterations
 
-    reconstruction.PrintImageSums("[End of inner loop]");
-
     //Mask reconstructed image to ROI given by the mask
     reconstruction.MaskVolume();
     stats.sample("MaskVolume");
-
-    reconstruction.PrintImageSums("[MaskVolume output]");
 
     //Save reconstructed image
       reconstructed = reconstruction.GetReconstructed();
@@ -859,19 +893,38 @@ int main(int argc, char **argv)
     printf("\n");
   }// end of interleaved registration-reconstruction iterations
 
+  start = startTimer();
   reconstruction.RestoreSliceIntensities();
+  seconds = endTimer(start);
+  executionTimes.restoreSliceIntensities += seconds;
   stats.sample("RestoreSliceInt.");
 
+  start = startTimer();
   reconstruction.ScaleVolume();
+  seconds = endTimer(start);
+  executionTimes.scaleVolume += seconds;
   stats.sample("ScaleVolume");
 
-  reconstruction.PrintImageSums("[End of outer loop]");
+  auto iterationSeconds = endTimer(startIterationTime);
+  auto totalSeconds = endTimer(startTime);
+
+  executionTimes.eStepI = reconstruction.eStepI;
+  executionTimes.eStepII = reconstruction.eStepII;
+  executionTimes.eStepIII = reconstruction.eStepIII;
+
+  TimeReport(executionTimes);
+
+  cout << "[Reconstruction loop time] " << iterationSeconds << endl;
+  cout << "[Initial reconstruction time] " << initialReconstructionSeconds << endl;
+  cout << "[Total time] " << totalSeconds << endl;
+  reconstruction.PrintImageSums("[checksum]");
 
   pt::ptime now = pt::microsec_clock::local_time();
   pt::time_duration diff = now - tick;
   double mss = diff.total_milliseconds() / 1000.0;
 
-    sprintf(buffer, "performance_CPU_%s.txt", currentDateTime().c_str());
+  /*
+  sprintf(buffer, "performance_CPU_%s.txt", currentDateTime().c_str());
   ofstream perf_file(buffer);
   stats.print();
   stats.print(perf_file);
@@ -880,6 +933,7 @@ int main(int argc, char **argv)
   perf_file << " s........\n";
   perf_file.close();
   printf(".........overall time: %f s........\n", mss);
+  */
 
   //save final result
   reconstructed = reconstruction.GetReconstructed();
